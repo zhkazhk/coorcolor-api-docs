@@ -1,0 +1,42 @@
+name: docs check
+
+# The site is generated, so a pull request that edits a page by hand is a
+# mistake unless the generator ran too. These four steps are the same ones a
+# reader can run locally; CI only makes "forgot to run them" impossible.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Contract still matches the source snapshot (exit 4 on drift)
+        run: python tools/shyzctl.py contract check
+
+      - name: Pages still match the contract, links and anchors
+        run: python tools/shyzctl.py verify
+
+      - name: HTML is well formed and every class is styled
+        run: python tools/audit_site.py
+
+      - name: Committed HTML is what the generator produces
+        run: |
+          python tools/shyzctl.py docs build
+          if ! git diff --quiet; then
+            echo "::error::Generated pages are stale. Run 'python tools/shyzctl.py docs build' and commit the result."
+            git diff --stat
+            exit 1
+          fi
