@@ -82,7 +82,7 @@
   "message": "请输入正确的手机号"
 }</code></pre>
   
-  <p class="capture__note">Length is the only check here and it runs before the format check.</p>
+  <p class="capture__note">Seven characters are rejected by the length check. There is no separate format check to fail afterwards.</p>
 </figure>
 <div class="note note--info"><span class="note__label">A stricter validator already exists</span><p><code>validatePhone</code> with <code>/^1[3-9]\d{9}$/</code> is defined in the same file (<span class="cite">server/index.js:34</span>) and used by order validation, but not here. See <a href="../errors/index.html#E-SMS-LEN">E-SMS-LEN</a>.</p></div>
 <h2 id="delivery">Delivery</h2>

@@ -210,7 +210,7 @@
     {
       "id": "send-code-bad-phone",
       "group": "sms",
-      "note": "Length is the only check here and it runs before the format check.",
+      "note": "Seven characters are rejected by the length check. There is no separate format check to fail afterwards.",
       "base": "core",
       "request": {
         "method": "POST",
@@ -2029,7 +2029,7 @@
     {
       "id": "route-not-found",
       "group": "routing",
-      "note": "The reviews listing lives under /api/admin/reviews/pending. The unmounted path falls through to the catch-all handler.",
+      "note": "This path is not unmounted: it matches GET /api/reviews/:id with id `pending`, so the 404 comes from the review lookup, not from the catch-all.",
       "base": "core",
       "request": {
         "method": "GET",

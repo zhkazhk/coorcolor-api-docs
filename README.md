@@ -92,16 +92,12 @@ Then in the repository: **Settings → Pages → Source: Deploy from a branch �
 `.nojekyll` is included, so no Jekyll processing is applied and `assets/` and `tools/`
 are served as-is.
 
-`.github/workflows/docs-check.yml` runs the same three checks on every push, plus a
-"generated pages are not stale" comparison, so the green tick means the published HTML
-is exactly what `tools/sitegen.py` produces. Add the badge once the repository exists:
-
-```markdown
-![docs check](https://github.com/zhkazhk/coorcolor-api-docs/actions/workflows/docs-check.yml/badge.svg)
-```
+The deployed site is served from `main` at
+<https://zhkazhk.github.io/coorcolor-api-docs/>. Nothing is built server-side: the HTML in
+the repository is the HTML that ships, which is why the check that pages match the
+generator belongs in CI rather than in a habit.
 
 ## Honesty notes
-
 - Eight of the 63 endpoints are documented in depth; the other 55 are listed in the
   inventory with their status codes, generated from the contract. That is a sample of the
   method, not a complete manual.

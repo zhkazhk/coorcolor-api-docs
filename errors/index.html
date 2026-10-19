@@ -40,7 +40,7 @@
 <h2 id="payment">Payment</h2>
 <div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-PAY-AMOUNT"><code>E-PAY-AMOUNT</code></a></td><td><span class="chip chip--danger">blocker</span></td><td><code>—</code></td><td>The payable amount is taken from the client and never recomputed</td></tr><tr><td><a href="#E-PAY-CALLBACK-XML"><code>E-PAY-CALLBACK-XML</code></a></td><td><span class="chip chip--danger">blocker</span></td><td><code>签名错误</code></td><td>The payment callback rejects every notification, including correctly signed ones</td></tr></tbody></table></div>
 <h2 id="routing">Routing</h2>
-<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-ROUTE-404"><code>E-ROUTE-404</code></a></td><td><span class="chip chip--ok">low</span></td><td><code>请求的资源不存在</code></td><td>A plausible but unmounted path answers 请求的资源不存在</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-ROUTE-404"><code>E-ROUTE-404</code></a></td><td><span class="chip chip--ok">low</span></td><td><code>评价不存在</code></td><td>A plausible path is swallowed by a neighbouring route</td></tr></tbody></table></div>
 <h2 id="cross-cutting">Cross-cutting</h2>
 <div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-ENVELOPE"><code>E-ENVELOPE</code></a></td><td><span class="chip chip--danger">high</span></td><td><code>—</code></td><td>There is no error taxonomy: <code>code</code> is always 0 or -1</td></tr></tbody></table></div>
 <h2 id="entries">Entries</h2>
@@ -181,7 +181,7 @@
   "message": "请输入正确的手机号"
 }</code></pre>
   
-  <p class="capture__note">Length is the only check here and it runs before the format check.</p>
+  <p class="capture__note">Seven characters are rejected by the length check. There is no separate format check to fail afterwards.</p>
 </figure>
 <p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
 <hr>
@@ -604,12 +604,12 @@
 <div class="note note--warn"><span class="note__label">No working example exists</span><p>This one cannot be demonstrated with a passing capture until the code changes. The evidence is the failing pair above plus the source line.</p></div>
 <p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
 <hr>
-<h3 id="E-ROUTE-404"><code>E-ROUTE-404</code> — A plausible but unmounted path answers 请求的资源不存在</h3>
-<dl class="meta"><dt>Endpoint</dt><dd>cross-cutting</dd><dt>HTTP</dt><dd><code>404</code></dd><dt>message</dt><dd><code>请求的资源不存在</code></dd><dt>Severity</dt><dd><span class="chip chip--ok">low</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1772</span></dd></dl>
-<p><strong>Symptom.</strong> <code>GET /api/reviews/pending</code> returns 404 while the real queue lives at <code>/api/admin/reviews/pending</code>.</p>
-<p><strong>Cause.</strong> The review queue is mounted under the admin prefix, and the catch-all handler (server/index.js:1772) answers any unmatched path with one generic message. Nothing lists the valid routes at runtime.</p>
-<p><strong>Next step.</strong> Check the inventory on the API index page, or ask the service: <code>shyzctl endpoints --grep reviews</code> prints every mounted path from the contract.</p>
-<p><strong>How to verify.</strong> capture-fail is the unmounted path; capture-fix is the mounted one and returns 200.</p>
+<h3 id="E-ROUTE-404"><code>E-ROUTE-404</code> — A plausible path is swallowed by a neighbouring route</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>GET /api/reviews/:id</code></dd><dt>HTTP</dt><dd><code>404</code></dd><dt>message</dt><dd><code>评价不存在</code></dd><dt>Severity</dt><dd><span class="chip chip--ok">low</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1526</span></dd></dl>
+<p><strong>Symptom.</strong> <code>GET /api/reviews/pending</code> answers 404 评价不存在. The review queue is not missing — the path resolved to the single-review handler with <code>id</code> = <code>pending</code>.</p>
+<p><strong>Cause.</strong> No route answers <code>/api/reviews/pending</code>, and <code>/api/reviews/:id</code> has no guard on the shape of <code>:id</code>, so the parameterised route takes it and the lookup fails. The message therefore comes from server/index.js:1533, not from the catch-all at :1772. The real queue is mounted at <code>/api/admin/reviews/pending</code>.</p>
+<p><strong>Next step.</strong> Use the mounted path. When a 404 names a different resource than the URL implies, suspect a routing collision rather than missing data: ask <code>shyzctl endpoints --grep reviews</code> instead of guessing a path.</p>
+<p><strong>How to verify.</strong> capture-fail is the swallowed path and answers 评价不存在; capture-fix is the mounted path and returns the queue.</p>
 <p><strong>Documented at.</strong> <a href="../api/index.html#inventory">api/index.html#inventory</a></p>
 <p class="capture__sub">Failing request</p>
 <figure class="capture capture--compact" data-capture="route-not-found">
@@ -619,7 +619,7 @@
   "message": "评价不存在"
 }</code></pre>
   
-  <p class="capture__note">The reviews listing lives under /api/admin/reviews/pending. The unmounted path falls through to the catch-all handler.</p>
+  <p class="capture__note">This path is not unmounted: it matches GET /api/reviews/:id with id <code>pending</code>, so the 404 comes from the review lookup, not from the catch-all.</p>
 </figure>
 <p class="capture__sub">Working request</p>
 <figure class="capture capture--compact" data-capture="admin-reviews-pending">

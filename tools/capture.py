@@ -152,7 +152,7 @@ CASES: list[dict] = [
         "path": "/api/user/send-code",
         "json": {"phone": "1390000"},
         "expect": 400,
-        "note": "Length is the only check here and it runs before the format check.",
+        "note": "Seven characters are rejected by the length check. There is no separate format check to fail afterwards.",
     },
     {
         "id": "send-code-non-numeric",
@@ -438,7 +438,7 @@ CASES: list[dict] = [
         "method": "GET",
         "path": "/api/reviews/pending",
         "expect": 404,
-        "note": "The reviews listing lives under /api/admin/reviews/pending. The unmounted path falls through to the catch-all handler.",
+        "note": "This path is not unmounted: it matches GET /api/reviews/:id with id `pending`, so the 404 comes from the review lookup, not from the catch-all.",
     },
     {
         "id": "admin-reviews-pending",

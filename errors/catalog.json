@@ -25,7 +25,10 @@
       "source": "server/index.js:312",
       "capture_fail": "user-addresses-bare-token",
       "capture_fix": "user-addresses-bearer-token",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-AUTH-FORGED",
@@ -43,7 +46,10 @@
       "source": "server/index.js:317",
       "capture_fail": "user-addresses-forged-token",
       "capture_fix": "user-addresses-bearer-token",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-AUTH-ENUM",
@@ -61,7 +67,10 @@
       "source": "server/index.js:63",
       "capture_fail": "login-unknown-user",
       "capture_fix": "login-ok",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-AUTH-ADMIN-TOKEN",
@@ -79,7 +88,10 @@
       "source": "server/index.js:214",
       "capture_fail": "user-addresses-bearer-token",
       "capture_fix": null,
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-SMS-LEN",
@@ -97,7 +109,10 @@
       "source": "server/index.js:264",
       "capture_fail": "send-code-non-numeric",
       "capture_fix": "send-code-bad-phone",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-SMS-NOGATEWAY",
@@ -115,7 +130,10 @@
       "source": "server/index.js:274",
       "capture_fail": "send-code-ok",
       "capture_fix": null,
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-ORD-VALIDATION",
@@ -133,7 +151,10 @@
       "source": "server/index.js:53",
       "capture_fail": "orders-create-validation",
       "capture_fix": "orders-create-ok",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-ORD-ID-COLLISION",
@@ -151,7 +172,10 @@
       "source": "server/index.js:87",
       "capture_fail": "orders-create-ok",
       "capture_fix": null,
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-ORD-NOTFOUND",
@@ -169,7 +193,10 @@
       "source": "server/index.js:190",
       "capture_fail": "orders-detail-404",
       "capture_fix": "orders-detail-ok",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-ASG-NOENGINEER",
@@ -187,7 +214,10 @@
       "source": "server/index.js:1030",
       "capture_fail": "assign-missing-engineer",
       "capture_fix": "assign-ok",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-ASG-MASK",
@@ -205,7 +235,10 @@
       "source": "server/index.js:1036",
       "capture_fail": "assign-unknown-order",
       "capture_fix": "assign-ok",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-STATE-COMPLETE",
@@ -223,7 +256,10 @@
       "source": "server/index.js:1090",
       "capture_fail": "complete-wrong-state",
       "capture_fix": "complete-ok",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-STATE-START",
@@ -241,7 +277,10 @@
       "source": "server/index.js:1065",
       "capture_fail": "start-wrong-state",
       "capture_fix": "start-ok",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-PAY-AMOUNT",
@@ -259,7 +298,10 @@
       "source": "server/index.js:1657",
       "capture_fail": "payment-create-tiny-amount",
       "capture_fix": null,
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-PAY-CALLBACK-XML",
@@ -277,25 +319,31 @@
       "source": "server/index.js:1688",
       "capture_fail": "payment-callback-correct-sign",
       "capture_fix": null,
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-ROUTE-404",
-      "title": "A plausible but unmounted path answers 请求的资源不存在",
+      "title": "A plausible path is swallowed by a neighbouring route",
       "area": "Routing",
-      "endpoint": null,
+      "endpoint": "GET /api/reviews/:id",
       "http": 404,
-      "message": "请求的资源不存在",
+      "message": "评价不存在",
       "severity": "low",
-      "symptom": "`GET /api/reviews/pending` returns 404 while the real queue lives at `/api/admin/reviews/pending`.",
-      "cause": "The review queue is mounted under the admin prefix, and the catch-all handler (server/index.js:1772) answers any unmatched path with one generic message. Nothing lists the valid routes at runtime.",
-      "next_step": "Check the inventory on the API index page, or ask the service: `shyzctl endpoints --grep reviews` prints every mounted path from the contract.",
-      "verify": "capture-fail is the unmounted path; capture-fix is the mounted one and returns 200.",
+      "symptom": "`GET /api/reviews/pending` answers 404 评价不存在. The review queue is not missing — the path resolved to the single-review handler with `id` = `pending`.",
+      "cause": "No route answers `/api/reviews/pending`, and `/api/reviews/:id` has no guard on the shape of `:id`, so the parameterised route takes it and the lookup fails. The message therefore comes from server/index.js:1533, not from the catch-all at :1772. The real queue is mounted at `/api/admin/reviews/pending`.",
+      "next_step": "Use the mounted path. When a 404 names a different resource than the URL implies, suspect a routing collision rather than missing data: ask `shyzctl endpoints --grep reviews` instead of guessing a path.",
+      "verify": "capture-fail is the swallowed path and answers 评价不存在; capture-fix is the mounted path and returns the queue.",
       "doc": "api/index.html#inventory",
-      "source": "server/index.js:1772",
+      "source": "server/index.js:1526",
       "capture_fail": "route-not-found",
       "capture_fix": "admin-reviews-pending",
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     },
     {
       "id": "E-ENVELOPE",
@@ -313,7 +361,10 @@
       "source": "server/index.js:1394",
       "capture_fail": "orders-create-validation",
       "capture_fix": null,
-      "tags": ["error-catalog", "API-ref"]
+      "tags": [
+        "error-catalog",
+        "API-ref"
+      ]
     }
   ]
 }
