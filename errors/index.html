@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Error catalogue · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html" aria-current="page">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#index">Index by area</a></li><li><a href="#entries">Entries</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../api/index.html">API reference</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article>
+<p class="eyebrow">Reference · troubleshooting</p>
+<h1>Error catalogue</h1>
+<p class="lede">17 entries, each written from a recorded request, not from reading the code alone. Every row resolves to a page anchor, and every <code>capture_fail</code> / <code>capture_fix</code> id exists in contracts/captures.json, so the catalogue can be re-verified after a code change.</p>
+<div class="note note--ok"><span class="note__label">How to use it</span><p>Start from the symptom you can see, not from the message you cannot explain. Each entry names the request that produced it, the line of code behind it, and the smallest change that fixes it. Query the same data from a terminal with <code>shyzctl explain E-ASG-MASK</code>.</p></div>
+<h2 id="index">Index by area</h2>
+<div class="table-wrap"><table><thead><tr><th>Severity</th><th>Meaning</th></tr></thead><tbody><tr><td><code>blocker</code></td><td>A published flow cannot complete in production.</td></tr><tr><td><code>high</code></td><td>Silent data loss, wrong money, or an access-control gap.</td></tr><tr><td><code>medium</code></td><td>A caller can trigger a confusing failure or a wrong assumption.</td></tr><tr><td><code>low</code></td><td>Costs time, but the outcome is still correct.</td></tr></tbody></table></div>
+<h2 id="authentication">Authentication</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-AUTH-BEARER"><code>E-AUTH-BEARER</code></a></td><td><span class="chip chip--danger">blocker</span></td><td><code>请先登录</code></td><td>Authenticated call answers 请先登录 even though the client sent a token</td></tr><tr><td><a href="#E-AUTH-FORGED"><code>E-AUTH-FORGED</code></a></td><td><span class="chip chip--warn">medium</span></td><td><code>登录已过期</code></td><td>A badly signed token is reported as an expired session</td></tr><tr><td><a href="#E-AUTH-ENUM"><code>E-AUTH-ENUM</code></a></td><td><span class="chip chip--warn">medium</span></td><td><code>用户不存在</code></td><td>Sign-in reveals whether a username exists</td></tr><tr><td><a href="#E-AUTH-ADMIN-TOKEN"><code>E-AUTH-ADMIN-TOKEN</code></a></td><td><span class="chip chip--danger">high</span></td><td><code>—</code></td><td>An administrator token passes every user route and reads as an empty account</td></tr></tbody></table></div>
+<h2 id="sms-sign-in">SMS sign-in</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-SMS-LEN"><code>E-SMS-LEN</code></a></td><td><span class="chip chip--warn">medium</span></td><td><code>—</code></td><td>Any eleven characters are accepted as a phone number</td></tr><tr><td><a href="#E-SMS-NOGATEWAY"><code>E-SMS-NOGATEWAY</code></a></td><td><span class="chip chip--danger">blocker</span></td><td><code>验证码已发送</code></td><td>No SMS is ever sent — the code is printed to the server console</td></tr></tbody></table></div>
+<h2 id="orders">Orders</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-ORD-VALIDATION"><code>E-ORD-VALIDATION</code></a></td><td><span class="chip chip--ok">low</span></td><td><code>服务类型不能为空</code></td><td>Order creation rejects eight fields at once in one joined string</td></tr><tr><td><a href="#E-ORD-ID-COLLISION"><code>E-ORD-ID-COLLISION</code></a></td><td><span class="chip chip--danger">high</span></td><td><code>—</code></td><td>Two orders created in the same millisecond share an id</td></tr><tr><td><a href="#E-ORD-NOTFOUND"><code>E-ORD-NOTFOUND</code></a></td><td><span class="chip chip--ok">low</span></td><td><code>订单不存在</code></td><td>A stale order id answers 404 with the same envelope as a validation error</td></tr></tbody></table></div>
+<h2 id="state-machine">State machine</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-ASG-NOENGINEER"><code>E-ASG-NOENGINEER</code></a></td><td><span class="chip chip--ok">low</span></td><td><code>请选择工程师</code></td><td>Assignment answers 请选择工程师 even when the order is also wrong</td></tr><tr><td><a href="#E-ASG-MASK"><code>E-ASG-MASK</code></a></td><td><span class="chip chip--warn">medium</span></td><td><code>订单不存在</code></td><td>An unknown order masks an unknown engineer</td></tr><tr><td><a href="#E-STATE-COMPLETE"><code>E-STATE-COMPLETE</code></a></td><td><span class="chip chip--warn">medium</span></td><td><code>只能完成服务中的订单</code></td><td>Completing an order that is not in progress fails without saying what state it is in</td></tr><tr><td><a href="#E-STATE-START"><code>E-STATE-START</code></a></td><td><span class="chip chip--warn">medium</span></td><td><code>只能开始已确认的订单</code></td><td>Starting a pending order is refused because confirm was skipped</td></tr></tbody></table></div>
+<h2 id="payment">Payment</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-PAY-AMOUNT"><code>E-PAY-AMOUNT</code></a></td><td><span class="chip chip--danger">blocker</span></td><td><code>—</code></td><td>The payable amount is taken from the client and never recomputed</td></tr><tr><td><a href="#E-PAY-CALLBACK-XML"><code>E-PAY-CALLBACK-XML</code></a></td><td><span class="chip chip--danger">blocker</span></td><td><code>签名错误</code></td><td>The payment callback rejects every notification, including correctly signed ones</td></tr></tbody></table></div>
+<h2 id="routing">Routing</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-ROUTE-404"><code>E-ROUTE-404</code></a></td><td><span class="chip chip--ok">low</span></td><td><code>请求的资源不存在</code></td><td>A plausible but unmounted path answers 请求的资源不存在</td></tr></tbody></table></div>
+<h2 id="cross-cutting">Cross-cutting</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>message</th><th>Symptom</th></tr></thead><tbody><tr><td><a href="#E-ENVELOPE"><code>E-ENVELOPE</code></a></td><td><span class="chip chip--danger">high</span></td><td><code>—</code></td><td>There is no error taxonomy: <code>code</code> is always 0 or -1</td></tr></tbody></table></div>
+<h2 id="entries">Entries</h2>
+<h3 id="E-AUTH-BEARER"><code>E-AUTH-BEARER</code> — Authenticated call answers 请先登录 even though the client sent a token</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>GET /api/user/addresses</code></dd><dt>HTTP</dt><dd><code>401</code></dd><dt>message</dt><dd><code>请先登录</code></dd><dt>Severity</dt><dd><span class="chip chip--danger">blocker</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:312</span></dd></dl>
+<p><strong>Symptom.</strong> Every authenticated request returns 401 请先登录. The token in local storage is valid and the account exists.</p>
+<p><strong>Cause.</strong> The handlers require the header to start with <code>Bearer </code> (server/index.js:312), but the shipped client sends the bare token: <code>'Authorization': wx.getStorageSync('token')</code> in utils/api.js:18. The prefix is never added anywhere.</p>
+<p><strong>Next step.</strong> Send <code>Authorization: Bearer &lt;token&gt;</code>. One-line client fix: <code>'Authorization': 'Bearer ' + (wx.getStorageSync('token') || '')</code>. Decide the convention once and document it in the client wrapper, not in each page.</p>
+<p><strong>How to verify.</strong> The two captured pairs differ only in the header: capture-fail returns 401 请先登录, capture-fix returns 200 with an empty address list.</p>
+<p><strong>Documented at.</strong> <a href="../api/authentication.html#bearer-prefix">api/authentication.html#bearer-prefix</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="user-addresses-bare-token">
+  <figcaption><code>GET /api/user/addresses</code> <span class="chip chip--warn">HTTP 401</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "请先登录"
+}</code></pre>
+  
+  <p class="capture__note">The shipped mini program sends the raw token here. The server requires the <code>Bearer </code> prefix, so the request is rejected.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="user-addresses-bearer-token">
+  <figcaption><code>GET /api/user/addresses</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": []
+}</code></pre>
+  
+  <p class="capture__note">Same token with the required prefix.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-AUTH-FORGED"><code>E-AUTH-FORGED</code> — A badly signed token is reported as an expired session</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>GET /api/user/addresses</code></dd><dt>HTTP</dt><dd><code>401</code></dd><dt>message</dt><dd><code>登录已过期</code></dd><dt>Severity</dt><dd><span class="chip chip--warn">medium</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:317</span></dd></dl>
+<p><strong>Symptom.</strong> A token that was never valid (wrong signature, tampered payload) produces 登录已过期, the same message as a genuinely expired one.</p>
+<p><strong>Cause.</strong> The handler wraps <code>jwt.verify</code> in a blanket try/catch (server/index.js:317-326) and maps every error, including JsonWebTokenError, to the expiry message. The global error middleware that distinguishes the two (server/index.js:1397-1403) is never reached because the handler swallows the error first.</p>
+<p><strong>Next step.</strong> Branch on the error: <code>TokenExpiredError</code> → 登录已过期, anything else → 无效的登录凭证. The client can then decide between refresh and re-login instead of guessing.</p>
+<p><strong>How to verify.</strong> capture-fail uses a well-formed JWT with a replaced signature and receives 登录已过期, which proves the collapse.</p>
+<p><strong>Documented at.</strong> <a href="../api/authentication.html#verification">api/authentication.html#verification</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="user-addresses-forged-token">
+  <figcaption><code>GET /api/user/addresses</code> <span class="chip chip--warn">HTTP 401</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "登录已过期"
+}</code></pre>
+  
+  <p class="capture__note">Well-formed JWT with a bad signature. The handler catches the verify error and reports it as an expired session.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="user-addresses-bearer-token">
+  <figcaption><code>GET /api/user/addresses</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": []
+}</code></pre>
+  
+  <p class="capture__note">Same token with the required prefix.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-AUTH-ENUM"><code>E-AUTH-ENUM</code> — Sign-in reveals whether a username exists</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>POST /api/login</code></dd><dt>HTTP</dt><dd><code>401</code></dd><dt>message</dt><dd><code>用户不存在</code></dd><dt>Severity</dt><dd><span class="chip chip--warn">medium</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:63</span></dd></dl>
+<p><strong>Symptom.</strong> Wrong credentials return one of two different texts: 用户不存在 or 密码错误.</p>
+<p><strong>Cause.</strong> server/index.js:63 and :68 answer separately for a missing account and a wrong password. Combined with no rate limiting anywhere in the service, the pair turns sign-in into a username oracle.</p>
+<p><strong>Next step.</strong> Return one message for both branches (凭据无效) and keep the specific reason in the server log. Until that ships, do not mirror the distinction in UI copy.</p>
+<p><strong>How to verify.</strong> capture-fail and the second 401 pair (login-bad-password) return the two different strings for the same status code.</p>
+<p><strong>Documented at.</strong> <a href="../api/post-login.html#errors">api/post-login.html#errors</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="login-unknown-user">
+  <figcaption><code>POST /api/login</code> <span class="chip chip--warn">HTTP 401</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "用户不存在"
+}</code></pre>
+  
+  <p class="capture__note">No such account. Returns 401 as well, so the client cannot tell the two apart.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="login-ok">
+  <figcaption><code>POST /api/login</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "token": "&lt;TOKEN&gt;",
+    "username": "admin"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Correct administrator credentials. The token is a 24 h HS256 JWT.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-AUTH-ADMIN-TOKEN"><code>E-AUTH-ADMIN-TOKEN</code> — An administrator token passes every user route and reads as an empty account</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>GET /api/user/addresses</code></dd><dt>HTTP</dt><dd><code>200</code></dd><dt>message</dt><dd>—</dd><dt>Severity</dt><dd><span class="chip chip--danger">high</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:214</span></dd></dl>
+<p><strong>Symptom.</strong> With a valid admin token, user endpoints return HTTP 200 and empty payloads. The address list is <code>[]</code>, never the addresses that exist.</p>
+<p><strong>Cause.</strong> Only one login exists and it mints <code>{id, username}</code> (server/index.js:65). User handlers read <code>decoded.phone</code> (server/index.js:321), which is undefined for an admin token, so the filter matches nothing. <code>jwt.verify</code> succeeds, so nothing is rejected either.</p>
+<p><strong>Next step.</strong> Add a user-scoped login that signs <code>{phone}</code> and keep the two token audiences apart, for example with a <code>typ</code> claim and a check per route family. Treat the empty 200 as a data-loss symptom, not as a normal empty state.</p>
+<p><strong>How to verify.</strong> capture-fix sends the admin token with the correct prefix and still returns <code>{"code":0,"data":[]}</code>.</p>
+<p><strong>Documented at.</strong> <a href="../api/authentication.html#token-shapes">api/authentication.html#token-shapes</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="user-addresses-bearer-token">
+  <figcaption><code>GET /api/user/addresses</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": []
+}</code></pre>
+  
+  <p class="capture__note">Same token with the required prefix.</p>
+</figure>
+<div class="note note--warn"><span class="note__label">No working example exists</span><p>This one cannot be demonstrated with a passing capture until the code changes. The evidence is the failing pair above plus the source line.</p></div>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-SMS-LEN"><code>E-SMS-LEN</code> — Any eleven characters are accepted as a phone number</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>POST /api/user/send-code</code></dd><dt>HTTP</dt><dd><code>200</code></dd><dt>message</dt><dd>—</dd><dt>Severity</dt><dd><span class="chip chip--warn">medium</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:264</span></dd></dl>
+<p><strong>Symptom.</strong> <code>abcdefghijk</code> is accepted and a verification code is issued for it.</p>
+<p><strong>Cause.</strong> The only check is <code>phone.length !== 11</code> (server/index.js:264). The <code>validatePhone</code> helper with the real <code>1[3-9]\d{9}</code> pattern already exists in the same file (server/index.js:34) and is not used here.</p>
+<p><strong>Next step.</strong> Call the existing helper before issuing a code, and add a per-phone and per-IP throttle; the code store currently has no limit and is never cleaned up.</p>
+<p><strong>How to verify.</strong> capture-fail records a 200 for a non-numeric number; the neighbouring seven-character case returns 400, which shows the check is length-only.</p>
+<p><strong>Documented at.</strong> <a href="../api/post-user-send-code.html#validation">api/post-user-send-code.html#validation</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="send-code-non-numeric">
+  <figcaption><code>POST /api/user/send-code</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "message": "验证码已发送"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Eleven non-digit characters are accepted. <code>phone.length !== 11</code> is the whole validation, so this defect is reproducible.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="send-code-bad-phone">
+  <figcaption><code>POST /api/user/send-code</code> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "请输入正确的手机号"
+}</code></pre>
+  
+  <p class="capture__note">Length is the only check here and it runs before the format check.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-SMS-NOGATEWAY"><code>E-SMS-NOGATEWAY</code> — No SMS is ever sent — the code is printed to the server console</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>POST /api/user/send-code</code></dd><dt>HTTP</dt><dd><code>200</code></dd><dt>message</dt><dd><code>验证码已发送</code></dd><dt>Severity</dt><dd><span class="chip chip--danger">blocker</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:274</span></dd></dl>
+<p><strong>Symptom.</strong> The API answers 验证码已发送, the user's phone stays silent, and the six digits appear only in the server log.</p>
+<p><strong>Cause.</strong> There is no SMS provider integration. server/index.js:274 does <code>console.log</code> with the code; the in-memory store at server/index.js:202 is the only destination.</p>
+<p><strong>Next step.</strong> Until a provider is wired, do not describe this as sent. In the integrator guide, state plainly that the code is delivered out of band, and add the provider call plus failure handling before any release that depends on it.</p>
+<p><strong>How to verify.</strong> Start the service, request a code, and read stdout — the code is the last line. No outbound request is made.</p>
+<p><strong>Documented at.</strong> <a href="../api/post-user-send-code.html#delivery">api/post-user-send-code.html#delivery</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="send-code-ok">
+  <figcaption><code>POST /api/user/send-code</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "message": "验证码已发送"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Any 11-character string passes validation; no SMS is actually sent.</p>
+</figure>
+<div class="note note--warn"><span class="note__label">No working example exists</span><p>This one cannot be demonstrated with a passing capture until the code changes. The evidence is the failing pair above plus the source line.</p></div>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-ORD-VALIDATION"><code>E-ORD-VALIDATION</code> — Order creation rejects eight fields at once in one joined string</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>POST /api/orders</code></dd><dt>HTTP</dt><dd><code>400</code></dd><dt>message</dt><dd><code>服务类型不能为空</code></dd><dt>Severity</dt><dd><span class="chip chip--ok">low</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:53</span></dd></dl>
+<p><strong>Symptom.</strong> One 400 response lists every missing field, joined by full-width semicolons, so the client cannot point at a single input.</p>
+<p><strong>Cause.</strong> <code>validateOrderData</code> collects all failures into an array and answers <code>errors.join('；')</code> (server/index.js:43-53). There is no field key in the response, only prose.</p>
+<p><strong>Next step.</strong> Parse defensively or, better, validate the same rules client-side before sending. When the endpoint gains an error field map, keep the joined text as <code>message</code> for existing callers.</p>
+<p><strong>How to verify.</strong> capture-fail sends a body that violates seven of the eight rules and receives all seven reasons in the order they are checked.</p>
+<p><strong>Documented at.</strong> <a href="../api/post-orders.html#errors">api/post-orders.html#errors</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="orders-create-validation">
+  <figcaption><code>POST /api/orders</code> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "服务类型不能为空；问题描述不能为空；预约日期不能为空；预约时间不能为空；请输入正确的联系人姓名；请输入正确的手机号；请输入详细的服务地址"
+}</code></pre>
+  
+  <p class="capture__note">All eight field checks run before the response, and the reasons are joined into one string.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="orders-create-ok">
+  <figcaption><code>POST /api/orders</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID&gt;",
+    "order_no": "&lt;ORDER_NO&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Only the two identifiers come back. Everything else is echoed by GET /api/orders/:id.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-ORD-ID-COLLISION"><code>E-ORD-ID-COLLISION</code> — Two orders created in the same millisecond share an id</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>POST /api/orders</code></dd><dt>HTTP</dt><dd><code>200</code></dd><dt>message</dt><dd>—</dd><dt>Severity</dt><dd><span class="chip chip--danger">high</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:87</span></dd></dl>
+<p><strong>Symptom.</strong> Two order records with the same <code>id</code>; later reads return whichever one the lookup finds first.</p>
+<p><strong>Cause.</strong> <code>id: Date.now().toString()</code> (server/index.js:87) is the only identifier strategy for orders, addresses, ratings and reviews. Under concurrent submission, or a client retry loop, duplicate keys are reachable.</p>
+<p><strong>Next step.</strong> Key on a monotonic counter, a UUID, or the order number with its random suffix widened. <code>order_no</code> (CK + date + four random digits) is 10 000 values per day, which is better than a millisecond but still not unique.</p>
+<p><strong>How to verify.</strong> Send two creations in parallel with <code>curl --parallel</code>; compare <code>data.id</code>. The capture set cannot show this, because it is a race, so the check is the reproduction above.</p>
+<p><strong>Documented at.</strong> <a href="../api/post-orders.html#identifiers">api/post-orders.html#identifiers</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="orders-create-ok">
+  <figcaption><code>POST /api/orders</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID&gt;",
+    "order_no": "&lt;ORDER_NO&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Only the two identifiers come back. Everything else is echoed by GET /api/orders/:id.</p>
+</figure>
+<div class="note note--warn"><span class="note__label">No working example exists</span><p>This one cannot be demonstrated with a passing capture until the code changes. The evidence is the failing pair above plus the source line.</p></div>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-ORD-NOTFOUND"><code>E-ORD-NOTFOUND</code> — A stale order id answers 404 with the same envelope as a validation error</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>GET /api/orders/:id</code></dd><dt>HTTP</dt><dd><code>404</code></dd><dt>message</dt><dd><code>订单不存在</code></dd><dt>Severity</dt><dd><span class="chip chip--ok">low</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:190</span></dd></dl>
+<p><strong>Symptom.</strong> Opening an order from a bookmark returns 404 订单不存在. The client cannot tell this from a malformed request, because both carry <code>code: -1</code>.</p>
+<p><strong>Cause.</strong> Only the HTTP status separates the cases (server/index.js:190). The body has no error taxonomy, so any client that reads <code>code</code> treats every failure the same.</p>
+<p><strong>Next step.</strong> Treat 404 as 'remove it from the list' rather than 'show an error', and refresh the list on it. See E-ENVELOPE if you need a machine-readable reason.</p>
+<p><strong>How to verify.</strong> capture-fail uses a well-formed but unknown id and receives 404; capture-fix shows the same request with a live id.</p>
+<p><strong>Documented at.</strong> <a href="../api/get-order-detail.html#errors">api/get-order-detail.html#errors</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="orders-detail-404">
+  <figcaption><code>GET /api/orders/1700000000000</code> <span class="chip chip--warn">HTTP 404</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "订单不存在"
+}</code></pre>
+  
+  <p class="capture__note">Unknown order id.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="orders-detail-ok">
+  <figcaption><code>GET /api/orders/&lt;ORDER_ID&gt;</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID&gt;",
+    "order_no": "&lt;ORDER_NO&gt;",
+    "service_type": "repair",
+    "brand": "Canon",
+    "model": "iRC3322L",
+    "problem_desc": "Paper jam in tray 2, red light flashing",
+    "urgency": "urgent",
+    "photos": [],
+    "position": null,
+    "appointment_date": "2026-11-03",
+    "appointment_time": "14:00",
+    "contact_name": "Liu Yang",
+    "contact_phone": "13900000002",
+    "service_address": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+    "remark": "",
+    "status": "pending",
+    "created_at": "&lt;ISO-8601&gt;",
+    "updated_at": "&lt;ISO-8601&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">The order created above, with <code>engineer_*</code> fields present only after assignment.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-ASG-NOENGINEER"><code>E-ASG-NOENGINEER</code> — Assignment answers 请选择工程师 even when the order is also wrong</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>PUT /api/admin/orders/:id/assign</code></dd><dt>HTTP</dt><dd><code>400</code></dd><dt>message</dt><dd><code>请选择工程师</code></dd><dt>Severity</dt><dd><span class="chip chip--ok">low</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1030</span></dd></dl>
+<p><strong>Symptom.</strong> A dispatcher sends an assign without an engineer and gets told to pick an engineer, which is correct but hides that the order id was wrong too.</p>
+<p><strong>Cause.</strong> The body is validated before the order is looked up (server/index.js:1030). Failures are reported one at a time, so a request with two problems shows only the first.</p>
+<p><strong>Next step.</strong> Disable the assign action until an engineer is selected, then treat any remaining 400 as a genuine bug rather than a user error.</p>
+<p><strong>How to verify.</strong> capture-fail omits <code>engineer_id</code>; capture-fix repeats the same call with the field present and gets 200.</p>
+<p><strong>Documented at.</strong> <a href="../api/put-admin-orders-assign.html#errors">api/put-admin-orders-assign.html#errors</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="assign-missing-engineer">
+  <figcaption><code>PUT /api/admin/orders/&lt;ORDER_ID_2&gt;/assign</code> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "请选择工程师"
+}</code></pre>
+  
+  <p class="capture__note">The body is checked before the order is even looked up.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="assign-ok">
+  <figcaption><code>PUT /api/admin/orders/&lt;ORDER_ID_2&gt;/assign</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID_2&gt;",
+    "order_no": "&lt;ORDER_NO&gt;",
+    "service_type": "repair",
+    "brand": "HP",
+    "model": "",
+    "problem_desc": "Drum unit replacement",
+    "urgency": "normal",
+    "photos": [],
+    "position": null,
+    "appointment_date": "2026-11-04",
+    "appointment_time": "09:30",
+    "contact_name": "Wang Fang",
+    "contact_phone": "13900000003",
+    "service_address": "Floor 6, 1000 Century Avenue, Pudong, Shanghai",
+    "remark": "",
+    "status": "processing",
+    "created_at": "&lt;ISO-8601&gt;",
+    "updated_at": "&lt;ISO-8601&gt;",
+    "engineer_id": "engineer001",
+    "engineer_name": "张工程师",
+    "engineer_phone": "13800138001",
+    "timeline": [
+      {
+        "status": "processing",
+        "time": "&lt;ISO-8601&gt;",
+        "operator": "管理员",
+        "remark": "分配给工程师：张工程师"
+      }
+    ]
+  }
+}</code></pre>
+  
+  <p class="capture__note">Assignment jumps straight to <code>processing</code> and appends a timeline entry.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-ASG-MASK"><code>E-ASG-MASK</code> — An unknown order masks an unknown engineer</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>PUT /api/admin/orders/:id/assign</code></dd><dt>HTTP</dt><dd><code>404</code></dd><dt>message</dt><dd><code>订单不存在</code></dd><dt>Severity</dt><dd><span class="chip chip--warn">medium</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1036</span></dd></dl>
+<p><strong>Symptom.</strong> The engineer id in the form is out of date, but the error blames the order.</p>
+<p><strong>Cause.</strong> Checks run body, then order (:1036), then engineer (:1039). Two different failures share one status code and one envelope, so the second is unreachable while the first fails.</p>
+<p><strong>Next step.</strong> Fix the order id first, then re-run the call to surface the engineer error. When the endpoint gains error codes, give the two 404s different ones so the UI can point at the right field.</p>
+<p><strong>How to verify.</strong> capture-fail passes a live engineer against an unknown order and receives 订单不存在 rather than 工程师不存在.</p>
+<p><strong>Documented at.</strong> <a href="../api/put-admin-orders-assign.html#errors">api/put-admin-orders-assign.html#errors</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="assign-unknown-order">
+  <figcaption><code>PUT /api/admin/orders/1700000000001/assign</code> <span class="chip chip--warn">HTTP 404</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "订单不存在"
+}</code></pre>
+  
+  <p class="capture__note">Order is resolved before the engineer, so an unknown order masks an unknown engineer.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="assign-ok">
+  <figcaption><code>PUT /api/admin/orders/&lt;ORDER_ID_2&gt;/assign</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID_2&gt;",
+    "order_no": "&lt;ORDER_NO&gt;",
+    "service_type": "repair",
+    "brand": "HP",
+    "model": "",
+    "problem_desc": "Drum unit replacement",
+    "urgency": "normal",
+    "photos": [],
+    "position": null,
+    "appointment_date": "2026-11-04",
+    "appointment_time": "09:30",
+    "contact_name": "Wang Fang",
+    "contact_phone": "13900000003",
+    "service_address": "Floor 6, 1000 Century Avenue, Pudong, Shanghai",
+    "remark": "",
+    "status": "processing",
+    "created_at": "&lt;ISO-8601&gt;",
+    "updated_at": "&lt;ISO-8601&gt;",
+    "engineer_id": "engineer001",
+    "engineer_name": "张工程师",
+    "engineer_phone": "13800138001",
+    "timeline": [
+      {
+        "status": "processing",
+        "time": "&lt;ISO-8601&gt;",
+        "operator": "管理员",
+        "remark": "分配给工程师：张工程师"
+      }
+    ]
+  }
+}</code></pre>
+  
+  <p class="capture__note">Assignment jumps straight to <code>processing</code> and appends a timeline entry.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-STATE-COMPLETE"><code>E-STATE-COMPLETE</code> — Completing an order that is not in progress fails without saying what state it is in</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>PUT /api/admin/orders/:id/complete</code></dd><dt>HTTP</dt><dd><code>400</code></dd><dt>message</dt><dd><code>只能完成服务中的订单</code></dd><dt>Severity</dt><dd><span class="chip chip--warn">medium</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1090</span></dd></dl>
+<p><strong>Symptom.</strong> Completion is refused on an order the operator believes is in progress. The message names the required state but not the current one.</p>
+<p><strong>Cause.</strong> The guard compares against <code>processing</code> only (server/index.js:1090) and answers with a fixed string. The handler does not echo the current status, so the operator has to reload the detail view to find out.</p>
+<p><strong>Next step.</strong> Reload the order, confirm the status, and drive it to <code>processing</code> (confirm, then start, or assign) before completing. Prefer showing the current status in the UI rather than relying on the message.</p>
+<p><strong>How to verify.</strong> capture-fail completes a <code>pending</code> order and is refused; capture-fix completes the same order after assignment, when it is <code>processing</code>.</p>
+<p><strong>Documented at.</strong> <a href="../api/put-admin-orders-assign.html#state-machine">api/put-admin-orders-assign.html#state-machine</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="complete-wrong-state">
+  <figcaption><code>PUT /api/admin/orders/&lt;ORDER_ID_3&gt;/complete</code> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "只能完成服务中的订单"
+}</code></pre>
+  
+  <p class="capture__note"><code>complete</code> only accepts <code>processing</code>; this order is still <code>pending</code>.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="complete-ok">
+  <figcaption><code>PUT /api/admin/orders/&lt;ORDER_ID_2&gt;/complete</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID_2&gt;",
+    "order_no": "&lt;ORDER_NO&gt;",
+    "service_type": "repair",
+    "brand": "HP",
+    "model": "",
+    "problem_desc": "Drum unit replacement",
+    "urgency": "normal",
+    "photos": [],
+    "position": null,
+    "appointment_date": "2026-11-04",
+    "appointment_time": "09:30",
+    "contact_name": "Wang Fang",
+    "contact_phone": "13900000003",
+    "service_address": "Floor 6, 1000 Century Avenue, Pudong, Shanghai",
+    "remark": "",
+    "status": "completed",
+    "created_at": "&lt;ISO-8601&gt;",
+    "updated_at": "&lt;ISO-8601&gt;",
+    "engineer_id": "engineer001",
+    "engineer_name": "张工程师",
+    "engineer_phone": "13800138001",
+    "timeline": [
+      {
+        "status": "processing",
+        "time": "&lt;ISO-8601&gt;",
+        "operator": "管理员",
+        "remark": "分配给工程师：张工程师"
+      },
+      {
+        "status": "completed",
+        "time": "&lt;ISO-8601&gt;",
+        "operator": "张工程师"
+      }
+    ],
+    "amount": 180,
+    "solution": "Replaced drum unit",
+    "materials": [
+      "DR-2450 drum"
+    ],
+    "service_completed_at": "&lt;ISO-8601&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">The assignment above left the order in <code>processing</code>, which is the only state <code>complete</code> accepts.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-STATE-START"><code>E-STATE-START</code> — Starting a pending order is refused because confirm was skipped</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>PUT /api/admin/orders/:id/start</code></dd><dt>HTTP</dt><dd><code>400</code></dd><dt>message</dt><dd><code>只能开始已确认的订单</code></dd><dt>Severity</dt><dd><span class="chip chip--warn">medium</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1065</span></dd></dl>
+<p><strong>Symptom.</strong> Start is refused on a freshly created order. The operator sees no reason in the message for the missing step.</p>
+<p><strong>Cause.</strong> <code>start</code> requires <code>confirmed</code> (server/index.js:1065), while <code>assign</code> jumps straight to <code>processing</code> without confirming. Two routes reach <code>processing</code>, and only one of them needs the confirm step, which makes the required sequence inconsistent.</p>
+<p><strong>Next step.</strong> Choose one path and document it. Today: assign (which forces <code>processing</code>) or confirm then start. Do not mix them in one workflow.</p>
+<p><strong>How to verify.</strong> capture-fail starts a <code>pending</code> order; confirm-ok then start-ok show the two-step path succeeding.</p>
+<p><strong>Documented at.</strong> <a href="../api/put-admin-orders-assign.html#state-machine">api/put-admin-orders-assign.html#state-machine</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="start-wrong-state">
+  <figcaption><code>PUT /api/admin/orders/&lt;ORDER_ID_3&gt;/start</code> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "只能开始已确认的订单"
+}</code></pre>
+  
+  <p class="capture__note"><code>start</code> only accepts <code>confirmed</code>; <code>pending</code> is rejected with its own message.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="start-ok">
+  <figcaption><code>PUT /api/admin/orders/&lt;ORDER_ID_4&gt;/start</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID_4&gt;",
+    "order_no": "&lt;ORDER_NO&gt;",
+    "service_type": "rent",
+    "brand": "Konica Minolta",
+    "model": "",
+    "problem_desc": "Monthly maintenance visit",
+    "urgency": "normal",
+    "photos": [],
+    "position": null,
+    "appointment_date": "2026-11-06",
+    "appointment_time": "10:00",
+    "contact_name": "Zhao Lei",
+    "contact_phone": "13900000005",
+    "service_address": "Floor 2, 66 Wuning Road, Putuo, Shanghai",
+    "remark": "",
+    "status": "processing",
+    "created_at": "&lt;ISO-8601&gt;",
+    "updated_at": "&lt;ISO-8601&gt;",
+    "timeline": [
+      {
+        "status": "confirmed",
+        "time": "&lt;ISO-8601&gt;",
+        "operator": "管理员"
+      },
+      {
+        "status": "processing",
+        "time": "&lt;ISO-8601&gt;",
+        "operator": "工程师"
+      }
+    ],
+    "service_started_at": "&lt;ISO-8601&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note"><code>confirmed</code> → <code>processing</code>, with <code>service_started_at</code> stamped.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-PAY-AMOUNT"><code>E-PAY-AMOUNT</code> — The payable amount is taken from the client and never recomputed</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>POST /api/wxpay/create-order</code></dd><dt>HTTP</dt><dd><code>200</code></dd><dt>message</dt><dd>—</dd><dt>Severity</dt><dd><span class="chip chip--danger">blocker</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1657</span></dd></dl>
+<p><strong>Symptom.</strong> A request for twelve rentals at ¥899 each, submitted with <code>totalAmount: 0.01</code>, is accepted and a payment for one fen is prepared.</p>
+<p><strong>Cause.</strong> <code>totalAmount</code> is copied from the body into the order and into <code>total_fee</code> (server/index.js:1624, :1657). The product records are never consulted, so nothing ties the charge to the catalogue price.</p>
+<p><strong>Next step.</strong> Recompute the amount server-side from <code>items[].productId</code> and the product price, and reject a body whose <code>totalAmount</code> disagrees. Do not deploy a payment path that trusts the client for money.</p>
+<p><strong>How to verify.</strong> capture-fail is the one-fen request and returns 200 with a workable pay signature.</p>
+<p><strong>Documented at.</strong> <a href="../api/post-wxpay-create-order.html#amount">api/post-wxpay-create-order.html#amount</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="payment-create-tiny-amount">
+  <figcaption><code>POST /api/wxpay/create-order</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "orderId": "&lt;EPOCH_MS&gt;",
+    "orderNo": "&lt;PAY_ORDER_NO&gt;",
+    "timeStamp": "&lt;UNIX_SECONDS&gt;",
+    "nonceStr": "&lt;NONCE_STR&gt;",
+    "package": "prepay_id=&lt;PREPAY_ID&gt;",
+    "signType": "MD5",
+    "paySign": "&lt;PAY_SIGN&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Twelve rentals priced at 899 each, charged one fen. The amount comes from the client and is never recomputed from the product records.</p>
+</figure>
+<div class="note note--warn"><span class="note__label">No working example exists</span><p>This one cannot be demonstrated with a passing capture until the code changes. The evidence is the failing pair above plus the source line.</p></div>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-PAY-CALLBACK-XML"><code>E-PAY-CALLBACK-XML</code> — The payment callback rejects every notification, including correctly signed ones</h3>
+<dl class="meta"><dt>Endpoint</dt><dd><code>POST /api/wxpay/callback</code></dd><dt>HTTP</dt><dd><code>200</code></dd><dt>message</dt><dd><code>签名错误</code></dd><dt>Severity</dt><dd><span class="chip chip--danger">blocker</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1688</span></dd></dl>
+<p><strong>Symptom.</strong> Every callback from the payment platform is answered <code>return_code=FAIL</code>, <code>return_msg=签名错误</code>, so an order never becomes paid through the callback.</p>
+<p><strong>Cause.</strong> <code>bodyParser.json()</code> is registered globally (server/index.js:14) and there is no XML parser. <code>req.body</code> is <code>{}</code> for <code>application/xml</code>, so <code>parseXML</code> (:1688) yields no parameters, <code>sign</code> is undefined, and <code>verifySign</code> (:1694) cannot succeed. The failure is silent because HTTP is still 200.</p>
+<p><strong>Next step.</strong> Register a text or raw parser for <code>application/xml</code> before the route, and confirm with a captured round trip. Until then, reconcile payments with <code>GET /api/wxpay/order/:orderNo</code>, which does flip the status.</p>
+<p><strong>How to verify.</strong> capture-fail carries a signature computed exactly as the platform requires (sorted pairs, <code>&amp;key=</code>, MD5 upper-case) and is still refused, which isolates the cause to body parsing rather than to the signing code.</p>
+<p><strong>Documented at.</strong> <a href="../api/post-wxpay-callback.html#signature">api/post-wxpay-callback.html#signature</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="payment-callback-correct-sign">
+  <figcaption><code>POST /api/wxpay/callback</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[FAIL]]&gt;&lt;/return_code&gt;&lt;return_msg&gt;&lt;![CDATA[签名错误]]&gt;&lt;/return_msg&gt;&lt;/xml&gt;</code></pre>
+  
+  <p class="capture__note">A signature computed exactly as WeChat requires (sorted key=value, &amp;key=&lt;merchant key&gt;, MD5 upper-case) is still rejected. The global JSON body parser never reads the XML, so <code>params</code> is empty and no signature can ever match.</p>
+</figure>
+<div class="note note--warn"><span class="note__label">No working example exists</span><p>This one cannot be demonstrated with a passing capture until the code changes. The evidence is the failing pair above plus the source line.</p></div>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-ROUTE-404"><code>E-ROUTE-404</code> — A plausible but unmounted path answers 请求的资源不存在</h3>
+<dl class="meta"><dt>Endpoint</dt><dd>cross-cutting</dd><dt>HTTP</dt><dd><code>404</code></dd><dt>message</dt><dd><code>请求的资源不存在</code></dd><dt>Severity</dt><dd><span class="chip chip--ok">low</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1772</span></dd></dl>
+<p><strong>Symptom.</strong> <code>GET /api/reviews/pending</code> returns 404 while the real queue lives at <code>/api/admin/reviews/pending</code>.</p>
+<p><strong>Cause.</strong> The review queue is mounted under the admin prefix, and the catch-all handler (server/index.js:1772) answers any unmatched path with one generic message. Nothing lists the valid routes at runtime.</p>
+<p><strong>Next step.</strong> Check the inventory on the API index page, or ask the service: <code>shyzctl endpoints --grep reviews</code> prints every mounted path from the contract.</p>
+<p><strong>How to verify.</strong> capture-fail is the unmounted path; capture-fix is the mounted one and returns 200.</p>
+<p><strong>Documented at.</strong> <a href="../api/index.html#inventory">api/index.html#inventory</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="route-not-found">
+  <figcaption><code>GET /api/reviews/pending</code> <span class="chip chip--warn">HTTP 404</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "评价不存在"
+}</code></pre>
+  
+  <p class="capture__note">The reviews listing lives under /api/admin/reviews/pending. The unmounted path falls through to the catch-all handler.</p>
+</figure>
+<p class="capture__sub">Working request</p>
+<figure class="capture capture--compact" data-capture="admin-reviews-pending">
+  <figcaption><code>GET /api/admin/reviews/pending</code> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <pre><code>{
+  "code": 0,
+  "data": [
+    {
+      "id": "review003",
+      "productId": "product027",
+      "orderId": "order003",
+      "userId": "user003",
+      "userName": "王**",
+      "userPhone": "137****9012",
+      "content": "彩色打印效果很好，推荐购买！",
+      "images": [],
+      "status": "pending",
+      "created_at": "&lt;ISO-8601&gt;"
+    }
+  ]
+}</code></pre>
+  
+  <p class="capture__note">The mounted path. Note that the pending queue requires no token either.</p>
+</figure>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+<h3 id="E-ENVELOPE"><code>E-ENVELOPE</code> — There is no error taxonomy: <code>code</code> is always 0 or -1</h3>
+<dl class="meta"><dt>Endpoint</dt><dd>cross-cutting</dd><dt>HTTP</dt><dd><code>400</code></dd><dt>message</dt><dd>—</dd><dt>Severity</dt><dd><span class="chip chip--danger">high</span></dd><dt>Source</dt><dd><span class="cite">server/index.js:1394</span></dd></dl>
+<p><strong>Symptom.</strong> Every failure looks identical to a program: <code>{"code":-1,"message":"…"}</code>. Clients branch on the HTTP status, or worse, on the Chinese string.</p>
+<p><strong>Cause.</strong> The success path uses <code>code: 0</code>, every failure uses <code>code: -1</code> (62 distinct message strings, one code). No error code, no field name, no request id — so a client cannot react to <code>库存不足</code> differently from <code>订单不存在</code> without string matching.</p>
+<p><strong>Next step.</strong> Introduce stable codes such as <code>ORDER_NOT_FOUND</code>, keep <code>message</code> for humans, and add <code>field</code> where validation failed. Version the change by adding fields, never by changing existing strings.</p>
+<p><strong>How to verify.</strong> <code>shyzctl endpoints --json</code> lists the status codes per endpoint; <code>shyzctl show POST /api/orders</code> shows the single <code>code</code> value used for eight different validation failures.</p>
+<p><strong>Documented at.</strong> <a href="../api/authentication.html#envelope">api/authentication.html#envelope</a></p>
+<p class="capture__sub">Failing request</p>
+<figure class="capture capture--compact" data-capture="orders-create-validation">
+  <figcaption><code>POST /api/orders</code> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <pre><code>{
+  "code": -1,
+  "message": "服务类型不能为空；问题描述不能为空；预约日期不能为空；预约时间不能为空；请输入正确的联系人姓名；请输入正确的手机号；请输入详细的服务地址"
+}</code></pre>
+  
+  <p class="capture__note">All eight field checks run before the response, and the reasons are joined into one string.</p>
+</figure>
+<div class="note note--warn"><span class="note__label">No working example exists</span><p>This one cannot be demonstrated with a passing capture until the code changes. The evidence is the failing pair above plus the source line.</p></div>
+<p><span class="tag">[error-catalog]</span> <span class="tag">[API-ref]</span></p>
+<hr>
+
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

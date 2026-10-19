@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PUT /api/admin/orders/:id/assign · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#errors">Errors</a></li><li><a href="#state-machine">Where this sits in the state machine</a></li><li><a href="#behaviour">Behaviour worth knowing</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="PUT /api/admin/orders/:id/assign">
+<p class="eyebrow">Reference · state machine</p><p class="endpoint-head"><span class="method method--put">PUT</span><code class="endpoint-path">/api/admin/orders/:id/assign</code></p><h1>Assign an engineer to an order</h1><p class="lede">Attaches an engineer to an order and moves it to <code>processing</code> in one call, without asking what state the order was in.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:1026-1056</span></dd><dt>Auth required</dt><dd>No — the handler performs no token check</dd><dt>Effect on status</dt><dd>Forced to <code>processing</code>, unguarded</dd><dt>Idempotent</dt><dd>No — every call appends a timeline entry</dd></dl>
+<h2 id="request">Request</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>path</td><td><code>string</code></td><td>Yes</td><td>Order id from <code>POST /api/orders</code>, <code>data.id</code>.</td></tr><tr><td><code>engineer_id</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>An existing engineer id such as <code>engineer001</code>. Any falsy value is rejected before the order is read.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="assign-ok">
+  <figcaption><span class="capture__id">recorded pair <code>assign-ok</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>PUT /api/admin/orders/&lt;ORDER_ID_2&gt;/assign</code></p>
+  <pre><code>{
+  "engineer_id": "engineer001"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID_2&gt;",
+    "order_no": "&lt;ORDER_NO&gt;",
+    "service_type": "repair",
+    "brand": "HP",
+    "model": "",
+    "problem_desc": "Drum unit replacement",
+    "urgency": "normal",
+    "photos": [],
+    "position": null,
+    "appointment_date": "2026-11-04",
+    "appointment_time": "09:30",
+    "contact_name": "Wang Fang",
+    "contact_phone": "13900000003",
+    "service_address": "Floor 6, 1000 Century Avenue, Pudong, Shanghai",
+    "remark": "",
+    "status": "processing",
+    "created_at": "&lt;ISO-8601&gt;",
+    "updated_at": "&lt;ISO-8601&gt;",
+    "engineer_id": "engineer001",
+    "engineer_name": "张工程师",
+    "engineer_phone": "13800138001",
+    "timeline": [
+      {
+        "status": "processing",
+        "time": "&lt;ISO-8601&gt;",
+        "operator": "管理员",
+        "remark": "分配给工程师：张工程师"
+      }
+    ]
+  }
+}</code></pre>
+  
+  <p class="capture__note">Assignment jumps straight to <code>processing</code> and appends a timeline entry.</p>
+</figure>
+<h2 id="response">Response</h2>
+<p>The full updated order. The selected engineer's id, name and phone are copied onto it, <code>status</code> becomes <code>processing</code>, and a timeline entry records the operator and the engineer's name:</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Notes</th></tr></thead><tbody><tr><td><code>status</code></td><td>Always <code>processing</code> after this call, whatever it was before.</td></tr><tr><td><code>engineer_name, engineer_phone</code></td><td>Copied from the engineer record so a detail view needs no second lookup.</td></tr><tr><td><code>timeline[]</code></td><td>New last entry: <code>{"status":"processing", "operator":"管理员", "remark":"分配给工程师：&lt;engineer name&gt;"}</code>.</td></tr><tr><td><code>updated_at</code></td><td>Refreshed.</td></tr></tbody></table></div>
+<h2 id="errors">Errors</h2>
+<div class="table-wrap"><table><thead><tr><th>HTTP</th><th>message</th><th>When it happens</th><th>What to do</th></tr></thead><tbody><tr data-status="400" data-message="请选择工程师"><td><span class="chip chip--warn">HTTP 400</span></td><td><code>请选择工程师</code></td><td><code>engineer_id</code> is missing, empty or otherwise falsy. Checked before the order is looked up.</td><td>Require a selection in the UI and block the call until one is set.</td></tr><tr data-status="404" data-message="订单不存在"><td><span class="chip chip--warn">HTTP 404</span></td><td><code>订单不存在</code></td><td>No order matches <code>id</code>. Raised after the body check and before the engineer lookup.</td><td>Re-read the order list; the id must come from <code>data.id</code> of the creation call.</td></tr><tr data-status="404" data-message="工程师不存在"><td><span class="chip chip--warn">HTTP 404</span></td><td><code>工程师不存在</code></td><td>No engineer matches <code>engineer_id</code>. Unreachable while the order id is also wrong.</td><td>Reload the engineer list and send an id that exists.</td></tr></tbody></table></div>
+<p>Checks run body, then order, then engineer, and each failure replaces the knowledge of the next one. A dispatcher with two stale ids is told about the order only. See <a href="../errors/index.html#E-ASG-MASK">E-ASG-MASK</a>.</p>
+<h2 id="state-machine">Where this sits in the state machine</h2>
+<p>Orders move through five statuses. Two routes reach <code>processing</code>, and they do not agree about what must happen first:</p>
+<div class="table-wrap"><table><thead><tr><th>From</th><th>Call</th><th>To</th><th>Guard</th></tr></thead><tbody><tr><td><code>pending</code></td><td><code>PUT /api/admin/orders/:id/confirm</code></td><td><code>confirmed</code></td><td>Requires <code>pending</code>: 400 只能确认待处理订单</td></tr><tr><td><code>confirmed</code></td><td><code>PUT /api/admin/orders/:id/start</code></td><td><code>processing</code></td><td>Requires <code>confirmed</code>: 400 只能开始已确认的订单</td></tr><tr><td><code>processing</code></td><td><code>PUT /api/admin/orders/:id/complete</code></td><td><code>completed</code></td><td>Requires <code>processing</code>: 400 只能完成服务中的订单</td></tr><tr><td>any</td><td><code>PUT /api/admin/orders/:id/assign</code></td><td><code>processing</code></td><td><strong>No guard</strong> — a completed order is silently reopened</td></tr><tr><td><code>pending</code> / <code>confirmed</code> / <code>processing</code></td><td><code>PUT /api/admin/orders/:id/cancel</code></td><td><code>canceled</code></td><td>Refuses <code>completed</code> and <code>canceled</code></td></tr></tbody><caption>The assign route bypasses the confirm and start steps entirely, so the same order can reach processing by two different histories.</caption></table></div>
+<p>Because <code>status</code> is overwritten rather than transitioned, assigning an order that is already <code>completed</code> returns it to <code>processing</code> and leaves the completion entry in the timeline. Nothing in the response flags that a finished job was reopened.</p>
+<div class="note note--danger"><span class="note__label">Two rules, one status</span><p>Confirm-then-start is guarded at every step; assign skips both. If a UI exposes only one of them, the other is reachable by API and produces a state the UI does not model. Documented, not fixed: the fix is a guard on <code>status</code> in the assign handler.</p></div>
+<h2 id="behaviour">Behaviour worth knowing</h2>
+<ul><li><strong>No authorization.</strong> Nothing on this route checks a token, so any caller who can reach the port can reassign work. Several admin routes share this property; the contract's auth column lists them all.</li><li><strong>Not idempotent.</strong> A retried call rewrites the engineer fields and appends a second timeline entry, so the log records two assignments for one decision. Guard retries on the client.</li><li><strong>The engineer is not validated as available.</strong> An engineer record with <code>status: inactive</code> or one who is already on another job can be assigned; <code>order_count</code> on the engineer record is never incremented here.</li><li><strong>The timeline is the audit trail.</strong> It is the only record of who changed what, it is append-only, and its <code>operator</code> value is a fixed Chinese string rather than the caller's identity — so it cannot attribute an action to a person.</li></ul>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>assign-ok</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

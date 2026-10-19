@@ -1,0 +1,2435 @@
+{
+  "contract_version": 1,
+  "generator": "shyzctl 1.3.0 contract build",
+  "source": {
+    "file": "server/index.js",
+    "lines": 1800,
+    "sha256": "57cad89dc88d085f71eb61020493a882f84b0f102878f5b8709db04f2aecc6a0"
+  },
+  "envelope": {
+    "success": {
+      "http": 200,
+      "body": {
+        "code": 0,
+        "data": "<payload>"
+      }
+    },
+    "failure": {
+      "http": "4xx / 5xx",
+      "body": {
+        "code": -1,
+        "message": "<reason>"
+      }
+    },
+    "note": "There are no machine-readable error codes. Clients must match the `message` string."
+  },
+  "middlewares": [
+    {
+      "name": "validateOrderData",
+      "line": 38,
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "；"
+          ],
+          "line": 53
+        }
+      ],
+      "messages": [
+        "；"
+      ],
+      "field_messages": [
+        {
+          "message": "服务类型不能为空",
+          "line": 43
+        },
+        {
+          "message": "品牌不能为空",
+          "line": 44
+        },
+        {
+          "message": "问题描述不能为空",
+          "line": 45
+        },
+        {
+          "message": "预约日期不能为空",
+          "line": 46
+        },
+        {
+          "message": "预约时间不能为空",
+          "line": 47
+        },
+        {
+          "message": "请输入正确的联系人姓名",
+          "line": 48
+        },
+        {
+          "message": "请输入正确的手机号",
+          "line": 49
+        },
+        {
+          "message": "请输入详细的服务地址",
+          "line": 50
+        }
+      ],
+      "status_codes": [
+        400
+      ]
+    }
+  ],
+  "endpoints": [
+    {
+      "id": "get-admin",
+      "method": "GET",
+      "path": "/admin",
+      "line": 17,
+      "end_line": 19,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "../admin/index.html"
+      ]
+    },
+    {
+      "id": "get",
+      "method": "GET",
+      "path": "/",
+      "line": 21,
+      "end_line": 57,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "；"
+          ],
+          "line": 53
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "；"
+      ],
+      "strings": [
+        "1.0.0",
+        "CoorColor打印机维修服务后端API",
+        "品牌不能为空",
+        "服务类型不能为空",
+        "请输入正确的手机号",
+        "请输入正确的联系人姓名",
+        "请输入详细的服务地址",
+        "问题描述不能为空",
+        "预约日期不能为空",
+        "预约时间不能为空"
+      ]
+    },
+    {
+      "id": "post-api-login",
+      "method": "POST",
+      "path": "/api/login",
+      "line": 59,
+      "end_line": 70,
+      "auth": "none",
+      "status_codes": [
+        200,
+        401
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "用户不存在"
+          ],
+          "line": 63
+        },
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "密码错误"
+          ],
+          "line": 68
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "密码错误",
+        "用户不存在"
+      ],
+      "strings": [
+        "24h",
+        "密码错误",
+        "用户不存在"
+      ]
+    },
+    {
+      "id": "get-api-orders",
+      "method": "GET",
+      "path": "/api/orders",
+      "line": 72,
+      "end_line": 81,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "all"
+      ]
+    },
+    {
+      "id": "post-api-orders",
+      "method": "POST",
+      "path": "/api/orders",
+      "line": 83,
+      "end_line": 110,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "；"
+          ],
+          "line": 53,
+          "via": "validateOrderData"
+        }
+      ],
+      "middleware": [
+        {
+          "name": "validateOrderData",
+          "line": 38,
+          "field_messages": [
+            {
+              "message": "服务类型不能为空",
+              "line": 43
+            },
+            {
+              "message": "品牌不能为空",
+              "line": 44
+            },
+            {
+              "message": "问题描述不能为空",
+              "line": 45
+            },
+            {
+              "message": "预约日期不能为空",
+              "line": 46
+            },
+            {
+              "message": "预约时间不能为空",
+              "line": 47
+            },
+            {
+              "message": "请输入正确的联系人姓名",
+              "line": 48
+            },
+            {
+              "message": "请输入正确的手机号",
+              "line": 49
+            },
+            {
+              "message": "请输入详细的服务地址",
+              "line": 50
+            }
+          ]
+        }
+      ],
+      "messages": [
+        "品牌不能为空",
+        "服务类型不能为空",
+        "请输入正确的手机号",
+        "请输入正确的联系人姓名",
+        "请输入详细的服务地址",
+        "问题描述不能为空",
+        "预约日期不能为空",
+        "预约时间不能为空",
+        "；"
+      ],
+      "strings": [
+        "normal",
+        "pending",
+        "品牌不能为空",
+        "服务类型不能为空",
+        "请输入正确的手机号",
+        "请输入正确的联系人姓名",
+        "请输入详细的服务地址",
+        "问题描述不能为空",
+        "预约日期不能为空",
+        "预约时间不能为空"
+      ]
+    },
+    {
+      "id": "put-api-orders-id-cancel",
+      "method": "PUT",
+      "path": "/api/orders/:id/cancel",
+      "line": 112,
+      "end_line": 120,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 115
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "订单不存在"
+      ],
+      "strings": [
+        "canceled",
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "put-api-admin-orders-id-status",
+      "method": "PUT",
+      "path": "/api/admin/orders/:id/status",
+      "line": 122,
+      "end_line": 132,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 126
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "订单不存在"
+      ],
+      "strings": [
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "post-api-orders-id-rate",
+      "method": "POST",
+      "path": "/api/orders/:id/rate",
+      "line": 134,
+      "end_line": 154,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "completed"
+      ]
+    },
+    {
+      "id": "get-api-engineers",
+      "method": "GET",
+      "path": "/api/engineers",
+      "line": 156,
+      "end_line": 162,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": []
+    },
+    {
+      "id": "post-api-engineers-id-position",
+      "method": "POST",
+      "path": "/api/engineers/:id/position",
+      "line": 163,
+      "end_line": 186,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "位置参数不完整"
+          ],
+          "line": 166
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "工程师不存在"
+          ],
+          "line": 172
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "位置参数不完整",
+        "工程师不存在"
+      ],
+      "strings": [
+        "位置参数不完整",
+        "工程师不存在"
+      ]
+    },
+    {
+      "id": "get-api-orders-id",
+      "method": "GET",
+      "path": "/api/orders/:id",
+      "line": 187,
+      "end_line": 202,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 190
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "订单不存在"
+      ],
+      "strings": [
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "get-api-user-info",
+      "method": "GET",
+      "path": "/api/user/info",
+      "line": 204,
+      "end_line": 223,
+      "auth": "optional-bearer",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "Bearer",
+        "用户"
+      ]
+    },
+    {
+      "id": "put-api-user-info",
+      "method": "PUT",
+      "path": "/api/user/info",
+      "line": 225,
+      "end_line": 259,
+      "auth": "bearer",
+      "status_codes": [
+        200,
+        401
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "请先登录"
+          ],
+          "line": 228
+        },
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "登录已过期"
+          ],
+          "line": 257
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "登录已过期",
+        "请先登录"
+      ],
+      "strings": [
+        "Bearer",
+        "用户",
+        "登录已过期",
+        "请先登录"
+      ]
+    },
+    {
+      "id": "post-api-user-send-code",
+      "method": "POST",
+      "path": "/api/user/send-code",
+      "line": 261,
+      "end_line": 277,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请输入正确的手机号"
+          ],
+          "line": 265
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请输入正确的手机号"
+      ],
+      "strings": [
+        "请输入正确的手机号",
+        "验证码已发送"
+      ]
+    },
+    {
+      "id": "post-api-user-bind-phone",
+      "method": "POST",
+      "path": "/api/user/bind-phone",
+      "line": 279,
+      "end_line": 308,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请输入正确的手机号"
+          ],
+          "line": 283
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请输入6位验证码"
+          ],
+          "line": 287
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请先获取验证码"
+          ],
+          "line": 293
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "验证码已过期"
+          ],
+          "line": 298
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "验证码错误"
+          ],
+          "line": 302
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请先获取验证码",
+        "请输入6位验证码",
+        "请输入正确的手机号",
+        "验证码已过期",
+        "验证码错误"
+      ],
+      "strings": [
+        "请先获取验证码",
+        "请输入6位验证码",
+        "请输入正确的手机号",
+        "验证码已过期",
+        "验证码错误"
+      ]
+    },
+    {
+      "id": "get-api-user-addresses",
+      "method": "GET",
+      "path": "/api/user/addresses",
+      "line": 310,
+      "end_line": 327,
+      "auth": "bearer",
+      "status_codes": [
+        200,
+        401
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "请先登录"
+          ],
+          "line": 313
+        },
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "登录已过期"
+          ],
+          "line": 325
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "登录已过期",
+        "请先登录"
+      ],
+      "strings": [
+        "Bearer",
+        "登录已过期",
+        "请先登录"
+      ]
+    },
+    {
+      "id": "post-api-user-addresses",
+      "method": "POST",
+      "path": "/api/user/addresses",
+      "line": 329,
+      "end_line": 370,
+      "auth": "bearer",
+      "status_codes": [
+        200,
+        400,
+        401
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "请先登录"
+          ],
+          "line": 332
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请填写完整的地址信息"
+          ],
+          "line": 341
+        },
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "登录已过期"
+          ],
+          "line": 368
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "登录已过期",
+        "请先登录",
+        "请填写完整的地址信息"
+      ],
+      "strings": [
+        "Bearer",
+        "登录已过期",
+        "请先登录",
+        "请填写完整的地址信息"
+      ]
+    },
+    {
+      "id": "put-api-user-addresses-id",
+      "method": "PUT",
+      "path": "/api/user/addresses/:id",
+      "line": 372,
+      "end_line": 408,
+      "auth": "bearer",
+      "status_codes": [
+        200,
+        401,
+        404
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "请先登录"
+          ],
+          "line": 375
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "地址不存在"
+          ],
+          "line": 387
+        },
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "登录已过期"
+          ],
+          "line": 406
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "地址不存在",
+        "登录已过期",
+        "请先登录"
+      ],
+      "strings": [
+        "Bearer",
+        "地址不存在",
+        "登录已过期",
+        "请先登录"
+      ]
+    },
+    {
+      "id": "delete-api-user-addresses-id",
+      "method": "DELETE",
+      "path": "/api/user/addresses/:id",
+      "line": 410,
+      "end_line": 438,
+      "auth": "bearer",
+      "status_codes": [
+        200,
+        401,
+        404
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "请先登录"
+          ],
+          "line": 413
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "地址不存在"
+          ],
+          "line": 424
+        },
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "登录已过期"
+          ],
+          "line": 432
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "地址不存在",
+        "登录已过期",
+        "请先登录"
+      ],
+      "strings": [
+        "Bearer",
+        "地址不存在",
+        "登录已过期",
+        "请先登录"
+      ]
+    },
+    {
+      "id": "post-api-referral-code",
+      "method": "POST",
+      "path": "/api/referral/code",
+      "line": 439,
+      "end_line": 468,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请提供手机号"
+          ],
+          "line": 443
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请提供手机号"
+      ],
+      "strings": [
+        "RC",
+        "请提供手机号"
+      ]
+    },
+    {
+      "id": "get-api-referral-info",
+      "method": "GET",
+      "path": "/api/referral/info",
+      "line": 469,
+      "end_line": 502,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请提供手机号"
+          ],
+          "line": 473
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请提供手机号"
+      ],
+      "strings": [
+        "请提供手机号"
+      ]
+    },
+    {
+      "id": "post-api-referral-share",
+      "method": "POST",
+      "path": "/api/referral/share",
+      "line": 503,
+      "end_line": 562,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请提供手机号"
+          ],
+          "line": 507
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请提供手机号"
+      ],
+      "strings": [
+        "RC",
+        "share_reward",
+        "unused",
+        "分享优惠券",
+        "分享成功",
+        "请提供手机号"
+      ]
+    },
+    {
+      "id": "post-api-referral-bind",
+      "method": "POST",
+      "path": "/api/referral/bind",
+      "line": 563,
+      "end_line": 621,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "参数不完整"
+          ],
+          "line": 567
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "推荐码无效"
+          ],
+          "line": 575
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "不能推荐自己"
+          ],
+          "line": 579
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "已经绑定过推荐码"
+          ],
+          "line": 589
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "不能推荐自己",
+        "参数不完整",
+        "已经绑定过推荐码",
+        "推荐码无效"
+      ],
+      "strings": [
+        "referral_bind",
+        "unused",
+        "不能推荐自己",
+        "参数不完整",
+        "已经绑定过推荐码",
+        "推荐码无效",
+        "新用户优惠券",
+        "绑定成功，获得新用户优惠券！"
+      ]
+    },
+    {
+      "id": "post-api-referral-rebate",
+      "method": "POST",
+      "path": "/api/referral/rebate",
+      "line": 622,
+      "end_line": 702,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "订单ID不能为空"
+          ],
+          "line": 626
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 636
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "订单未完成，无法返利"
+          ],
+          "line": 640
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "订单ID不能为空",
+        "订单不存在",
+        "订单未完成，无法返利"
+      ],
+      "strings": [
+        "available",
+        "completed",
+        "referral_bind",
+        "订单ID不能为空",
+        "订单不存在",
+        "订单未完成，无法返利",
+        "该订单已经返利过",
+        "该订单无推荐人，不进行返利"
+      ]
+    },
+    {
+      "id": "get-api-coupons",
+      "method": "GET",
+      "path": "/api/coupons",
+      "line": 703,
+      "end_line": 727,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请提供手机号"
+          ],
+          "line": 707
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请提供手机号"
+      ],
+      "strings": [
+        "all",
+        "unused",
+        "请提供手机号"
+      ]
+    },
+    {
+      "id": "post-api-coupons-use",
+      "method": "POST",
+      "path": "/api/coupons/use",
+      "line": 728,
+      "end_line": 758,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "优惠券ID不能为空"
+          ],
+          "line": 732
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "优惠券不存在"
+          ],
+          "line": 740
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "优惠券已使用"
+          ],
+          "line": 744
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "优惠券已过期"
+          ],
+          "line": 748
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "优惠券ID不能为空",
+        "优惠券不存在",
+        "优惠券已使用",
+        "优惠券已过期"
+      ],
+      "strings": [
+        "expired",
+        "used",
+        "优惠券ID不能为空",
+        "优惠券不存在",
+        "优惠券使用成功",
+        "优惠券已使用",
+        "优惠券已过期"
+      ]
+    },
+    {
+      "id": "get-api-rebates",
+      "method": "GET",
+      "path": "/api/rebates",
+      "line": 759,
+      "end_line": 779,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请提供手机号"
+          ],
+          "line": 763
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请提供手机号"
+      ],
+      "strings": [
+        "available",
+        "请提供手机号"
+      ]
+    },
+    {
+      "id": "get-api-products",
+      "method": "GET",
+      "path": "/api/products",
+      "line": 780,
+      "end_line": 800,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "active",
+        "all",
+        "true"
+      ]
+    },
+    {
+      "id": "get-api-products-id",
+      "method": "GET",
+      "path": "/api/products/:id",
+      "line": 801,
+      "end_line": 815,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "产品不存在"
+          ],
+          "line": 809
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "产品不存在"
+      ],
+      "strings": [
+        "产品不存在"
+      ]
+    },
+    {
+      "id": "post-api-admin-products",
+      "method": "POST",
+      "path": "/api/admin/products",
+      "line": 816,
+      "end_line": 844,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "缺少必要参数"
+          ],
+          "line": 820
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "缺少必要参数"
+      ],
+      "strings": [
+        "product",
+        "缺少必要参数",
+        "🖨️"
+      ]
+    },
+    {
+      "id": "put-api-admin-products-id",
+      "method": "PUT",
+      "path": "/api/admin/products/:id",
+      "line": 845,
+      "end_line": 873,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "产品不存在"
+          ],
+          "line": 854
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "产品不存在"
+      ],
+      "strings": [
+        "产品不存在"
+      ]
+    },
+    {
+      "id": "put-api-admin-products-id-status",
+      "method": "PUT",
+      "path": "/api/admin/products/:id/status",
+      "line": 874,
+      "end_line": 898,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "状态值无效，应为 active 或 inactive"
+          ],
+          "line": 879
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "产品不存在"
+          ],
+          "line": 887
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "产品不存在",
+        "状态值无效，应为 active 或 inactive"
+      ],
+      "strings": [
+        "active",
+        "inactive",
+        "产品不存在",
+        "状态值无效，应为 active 或 inactive"
+      ]
+    },
+    {
+      "id": "delete-api-admin-products-id",
+      "method": "DELETE",
+      "path": "/api/admin/products/:id",
+      "line": 899,
+      "end_line": 916,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "产品不存在"
+          ],
+          "line": 907
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "产品不存在"
+      ],
+      "strings": [
+        "产品不存在"
+      ]
+    },
+    {
+      "id": "post-api-orders-buy",
+      "method": "POST",
+      "path": "/api/orders/buy",
+      "line": 917,
+      "end_line": 1003,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "缺少必要参数"
+          ],
+          "line": 921
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "产品不存在"
+          ],
+          "line": 928
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "库存不足"
+          ],
+          "line": 932
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "产品不存在",
+        "库存不足",
+        "缺少必要参数"
+      ],
+      "strings": [
+        "MD5",
+        "paySign",
+        "pending",
+        "prepay_id=wx",
+        "unused",
+        "used",
+        "产品不存在",
+        "库存不足",
+        "缺少必要参数"
+      ]
+    },
+    {
+      "id": "put-api-admin-orders-id-confirm",
+      "method": "PUT",
+      "path": "/api/admin/orders/:id/confirm",
+      "line": 1004,
+      "end_line": 1025,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 1009
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "只能确认待处理订单"
+          ],
+          "line": 1010
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "只能确认待处理订单",
+        "订单不存在"
+      ],
+      "strings": [
+        "confirmed",
+        "pending",
+        "只能确认待处理订单",
+        "管理员",
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "put-api-admin-orders-id-assign",
+      "method": "PUT",
+      "path": "/api/admin/orders/:id/assign",
+      "line": 1026,
+      "end_line": 1058,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "请选择工程师"
+          ],
+          "line": 1030
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 1036
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "工程师不存在"
+          ],
+          "line": 1039
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "工程师不存在",
+        "订单不存在",
+        "请选择工程师"
+      ],
+      "strings": [
+        "processing",
+        "工程师不存在",
+        "管理员",
+        "订单不存在",
+        "请选择工程师"
+      ]
+    },
+    {
+      "id": "put-api-admin-orders-id-start",
+      "method": "PUT",
+      "path": "/api/admin/orders/:id/start",
+      "line": 1059,
+      "end_line": 1081,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 1064
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "只能开始已确认的订单"
+          ],
+          "line": 1065
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "只能开始已确认的订单",
+        "订单不存在"
+      ],
+      "strings": [
+        "confirmed",
+        "processing",
+        "只能开始已确认的订单",
+        "工程师",
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "put-api-admin-orders-id-complete",
+      "method": "PUT",
+      "path": "/api/admin/orders/:id/complete",
+      "line": 1082,
+      "end_line": 1109,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 1089
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "只能完成服务中的订单"
+          ],
+          "line": 1090
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "只能完成服务中的订单",
+        "订单不存在"
+      ],
+      "strings": [
+        "completed",
+        "processing",
+        "只能完成服务中的订单",
+        "工程师",
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "put-api-admin-orders-id-cancel",
+      "method": "PUT",
+      "path": "/api/admin/orders/:id/cancel",
+      "line": 1110,
+      "end_line": 1139,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 1117
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "已完成或已取消的订单无法取消"
+          ],
+          "line": 1119
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "已完成或已取消的订单无法取消",
+        "订单不存在"
+      ],
+      "strings": [
+        "canceled",
+        "completed",
+        "已完成或已取消的订单无法取消",
+        "管理员",
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "get-api-admin-engineers",
+      "method": "GET",
+      "path": "/api/admin/engineers",
+      "line": 1140,
+      "end_line": 1145,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": []
+    },
+    {
+      "id": "get-api-admin-engineers-id",
+      "method": "GET",
+      "path": "/api/admin/engineers/:id",
+      "line": 1146,
+      "end_line": 1153,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "工程师不存在"
+          ],
+          "line": 1149
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "工程师不存在"
+      ],
+      "strings": [
+        "工程师不存在"
+      ]
+    },
+    {
+      "id": "post-api-admin-engineers",
+      "method": "POST",
+      "path": "/api/admin/engineers",
+      "line": 1154,
+      "end_line": 1181,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "姓名和电话不能为空"
+          ],
+          "line": 1158
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "姓名和电话不能为空"
+      ],
+      "strings": [
+        "ENG",
+        "active",
+        "姓名和电话不能为空"
+      ]
+    },
+    {
+      "id": "put-api-admin-engineers-id",
+      "method": "PUT",
+      "path": "/api/admin/engineers/:id",
+      "line": 1182,
+      "end_line": 1201,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "工程师不存在"
+          ],
+          "line": 1188
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "工程师不存在"
+      ],
+      "strings": [
+        "工程师不存在"
+      ]
+    },
+    {
+      "id": "delete-api-admin-engineers-id",
+      "method": "DELETE",
+      "path": "/api/admin/engineers/:id",
+      "line": 1202,
+      "end_line": 1214,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "工程师不存在"
+          ],
+          "line": 1206
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "工程师不存在"
+      ],
+      "strings": [
+        "工程师不存在"
+      ]
+    },
+    {
+      "id": "get-api-admin-engineers-id-stats",
+      "method": "GET",
+      "path": "/api/admin/engineers/:id/stats",
+      "line": 1215,
+      "end_line": 1240,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "工程师不存在"
+          ],
+          "line": 1220
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "工程师不存在"
+      ],
+      "strings": [
+        "completed",
+        "processing",
+        "工程师不存在"
+      ]
+    },
+    {
+      "id": "get-api-admin-customers",
+      "method": "GET",
+      "path": "/api/admin/customers",
+      "line": 1241,
+      "end_line": 1271,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": []
+    },
+    {
+      "id": "get-api-admin-customers-phone",
+      "method": "GET",
+      "path": "/api/admin/customers/:phone",
+      "line": 1272,
+      "end_line": 1293,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "客户不存在"
+          ],
+          "line": 1279
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "客户不存在"
+      ],
+      "strings": [
+        "客户不存在"
+      ]
+    },
+    {
+      "id": "get-api-admin-stats",
+      "method": "GET",
+      "path": "/api/admin/stats",
+      "line": 1294,
+      "end_line": 1319,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "active",
+        "canceled",
+        "completed",
+        "confirmed",
+        "pending",
+        "processing"
+      ]
+    },
+    {
+      "id": "get-api-admin-stats-trend",
+      "method": "GET",
+      "path": "/api/admin/stats/trend",
+      "line": 1320,
+      "end_line": 1344,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "completed"
+      ]
+    },
+    {
+      "id": "get-api-admin-stats-service-types",
+      "method": "GET",
+      "path": "/api/admin/stats/service-types",
+      "line": 1345,
+      "end_line": 1371,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "other",
+        "其他",
+        "维修服务",
+        "耗材配件",
+        "设备租赁",
+        "设备购买"
+      ]
+    },
+    {
+      "id": "get-api-admin-stats-engineers",
+      "method": "GET",
+      "path": "/api/admin/stats/engineers",
+      "line": 1372,
+      "end_line": 1414,
+      "auth": "none",
+      "status_codes": [
+        200,
+        401,
+        500
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "无效的登录凭证"
+          ],
+          "line": 1398
+        },
+        {
+          "status": 401,
+          "code": -1,
+          "messages": [
+            "登录已过期，请重新登录"
+          ],
+          "line": 1402
+        },
+        {
+          "status": 500,
+          "code": -1,
+          "messages": [
+            "文件不存在"
+          ],
+          "line": 1406
+        },
+        {
+          "status": 500,
+          "code": -1,
+          "messages": [
+            "服务器内部错误，请稍后重试"
+          ],
+          "line": 1409
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "文件不存在",
+        "无效的登录凭证",
+        "服务器内部错误，请稍后重试",
+        "登录已过期，请重新登录"
+      ],
+      "strings": [
+        "ENOENT",
+        "JsonWebTokenError",
+        "TokenExpiredError",
+        "completed",
+        "文件不存在",
+        "无效的登录凭证",
+        "服务器内部错误，请稍后重试",
+        "服务器错误:",
+        "登录已过期，请重新登录"
+      ]
+    },
+    {
+      "id": "get-api-reviews-product-productId",
+      "method": "GET",
+      "path": "/api/reviews/product/:productId",
+      "line": 1415,
+      "end_line": 1425,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "approved"
+      ]
+    },
+    {
+      "id": "get-api-reviews-product-productId-stats",
+      "method": "GET",
+      "path": "/api/reviews/product/:productId/stats",
+      "line": 1426,
+      "end_line": 1439,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "approved"
+      ]
+    },
+    {
+      "id": "post-api-reviews",
+      "method": "POST",
+      "path": "/api/reviews",
+      "line": 1440,
+      "end_line": 1482,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        404
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "缺少必要参数"
+          ],
+          "line": 1444
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 1450
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "只能对已完成的订单进行评价"
+          ],
+          "line": 1454
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "该订单已评价过"
+          ],
+          "line": 1460
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "只能对已完成的订单进行评价",
+        "缺少必要参数",
+        "订单不存在",
+        "该订单已评价过"
+      ],
+      "strings": [
+        "$1****$2",
+        "completed",
+        "pending",
+        "review",
+        "unknown",
+        "只能对已完成的订单进行评价",
+        "用户",
+        "缺少必要参数",
+        "订单不存在",
+        "评价提交成功，等待审核",
+        "该订单已评价过"
+      ]
+    },
+    {
+      "id": "get-api-admin-reviews-pending",
+      "method": "GET",
+      "path": "/api/admin/reviews/pending",
+      "line": 1483,
+      "end_line": 1491,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [],
+      "middleware": [],
+      "messages": [],
+      "strings": [
+        "pending"
+      ]
+    },
+    {
+      "id": "put-api-admin-reviews-id-approve",
+      "method": "PUT",
+      "path": "/api/admin/reviews/:id/approve",
+      "line": 1492,
+      "end_line": 1508,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "评价不存在"
+          ],
+          "line": 1498
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "评价不存在"
+      ],
+      "strings": [
+        "approved",
+        "评价不存在"
+      ]
+    },
+    {
+      "id": "put-api-admin-reviews-id-reject",
+      "method": "PUT",
+      "path": "/api/admin/reviews/:id/reject",
+      "line": 1509,
+      "end_line": 1525,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "评价不存在"
+          ],
+          "line": 1515
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "评价不存在"
+      ],
+      "strings": [
+        "rejected",
+        "评价不存在"
+      ]
+    },
+    {
+      "id": "get-api-reviews-id",
+      "method": "GET",
+      "path": "/api/reviews/:id",
+      "line": 1526,
+      "end_line": 1540,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "评价不存在"
+          ],
+          "line": 1532
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "评价不存在"
+      ],
+      "strings": [
+        "评价不存在"
+      ]
+    },
+    {
+      "id": "post-api-user-getOpenid",
+      "method": "POST",
+      "path": "/api/user/getOpenid",
+      "line": 1541,
+      "end_line": 1618,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        500
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "code不能为空"
+          ],
+          "line": 1545
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "获取openid失败"
+          ],
+          "line": 1565
+        },
+        {
+          "status": 500,
+          "code": -1,
+          "messages": [
+            "获取openid失败"
+          ],
+          "line": 1577
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "code不能为空",
+        "获取openid失败"
+      ],
+      "strings": [
+        "./wxpay-utils",
+        "<REDACTED:wx-appid>",
+        "<REDACTED:wx-appsecret>",
+        "axios",
+        "code不能为空",
+        "data",
+        "fs",
+        "path",
+        "product-orders.json",
+        "utf8",
+        "微信支付工具加载失败，请确保已安装 xml2js 和 axios 依赖",
+        "获取openid失败",
+        "获取openid失败:"
+      ]
+    },
+    {
+      "id": "post-api-wxpay-create-order",
+      "method": "POST",
+      "path": "/api/wxpay/create-order",
+      "line": 1619,
+      "end_line": 1679,
+      "auth": "none",
+      "status_codes": [
+        200,
+        400,
+        500
+      ],
+      "errors": [
+        {
+          "status": 500,
+          "code": -1,
+          "messages": [
+            "微信支付功能未配置"
+          ],
+          "line": 1621
+        },
+        {
+          "status": 400,
+          "code": -1,
+          "messages": [
+            "参数不完整"
+          ],
+          "line": 1627
+        },
+        {
+          "status": 500,
+          "code": -1,
+          "messages": [
+            "创建订单失败"
+          ],
+          "line": 1675
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "创建订单失败",
+        "参数不完整",
+        "微信支付功能未配置"
+      ],
+      "strings": [
+        "127.0.0.1",
+        "pending",
+        "创建支付订单失败:",
+        "创建订单失败",
+        "参数不完整",
+        "微信支付功能未配置"
+      ]
+    },
+    {
+      "id": "post-api-wxpay-callback",
+      "method": "POST",
+      "path": "/api/wxpay/callback",
+      "line": 1680,
+      "end_line": 1720,
+      "auth": "none",
+      "status_codes": [
+        200
+      ],
+      "errors": [
+        {
+          "status": 200,
+          "code": -1,
+          "transport": "xml",
+          "return_code": "FAIL",
+          "messages": [
+            "系统错误"
+          ],
+          "line": 1682
+        },
+        {
+          "status": 200,
+          "code": -1,
+          "transport": "xml",
+          "return_code": "FAIL",
+          "messages": [
+            "签名错误"
+          ],
+          "line": 1695
+        },
+        {
+          "status": 200,
+          "code": -1,
+          "transport": "xml",
+          "return_code": "SUCCESS",
+          "messages": [
+            "OK"
+          ],
+          "line": 1710
+        },
+        {
+          "status": 200,
+          "code": -1,
+          "transport": "xml",
+          "return_code": "FAIL",
+          "messages": [
+            "支付失败"
+          ],
+          "line": 1712
+        },
+        {
+          "status": 200,
+          "code": -1,
+          "transport": "xml",
+          "return_code": "FAIL",
+          "messages": [
+            "处理失败"
+          ],
+          "line": 1716
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "OK",
+        "处理失败",
+        "支付失败",
+        "签名错误",
+        "系统错误"
+      ],
+      "strings": [
+        "./wxpay-config",
+        "FAIL",
+        "OK",
+        "SUCCESS",
+        "paid",
+        "处理失败",
+        "处理支付回调失败:",
+        "微信支付回调:",
+        "支付失败",
+        "签名错误",
+        "系统错误"
+      ]
+    },
+    {
+      "id": "get-api-wxpay-order-orderNo",
+      "method": "GET",
+      "path": "/api/wxpay/order/:orderNo",
+      "line": 1721,
+      "end_line": 1755,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404,
+        500
+      ],
+      "errors": [
+        {
+          "status": 500,
+          "code": -1,
+          "messages": [
+            "微信支付功能未配置"
+          ],
+          "line": 1723
+        },
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "订单不存在"
+          ],
+          "line": 1734
+        },
+        {
+          "status": 500,
+          "code": -1,
+          "messages": [
+            "查询订单失败"
+          ],
+          "line": 1751
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "微信支付功能未配置",
+        "查询订单失败",
+        "订单不存在"
+      ],
+      "strings": [
+        "SUCCESS",
+        "paid",
+        "pending",
+        "微信支付功能未配置",
+        "查询订单失败",
+        "查询订单失败:",
+        "订单不存在"
+      ]
+    },
+    {
+      "id": "get-api-product-orders",
+      "method": "GET",
+      "path": "/api/product-orders",
+      "line": 1756,
+      "end_line": 1800,
+      "auth": "none",
+      "status_codes": [
+        200,
+        404
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "code": -1,
+          "messages": [
+            "请求的资源不存在"
+          ],
+          "line": 1773
+        }
+      ],
+      "middleware": [],
+      "messages": [
+        "请求的资源不存在"
+      ],
+      "strings": [
+        "API文档:",
+        "DEL  /api/admin/engineers/:id - 删除工程师",
+        "GET  /api/admin/customers - 获取客户列表",
+        "GET  /api/admin/engineers - 获取工程师列表",
+        "GET  /api/admin/stats - 统计数据",
+        "GET  /api/admin/stats/engineers - 工程师排行",
+        "GET  /api/admin/stats/service-types - 服务类型分布",
+        "GET  /api/admin/stats/trend - 订单趋势",
+        "GET  /api/orders - 获取订单列表",
+        "GET  /api/orders/:id - 获取订单详情",
+        "POST /api/admin/engineers - 创建工程师",
+        "POST /api/login - 管理员登录",
+        "POST /api/orders - 创建订单",
+        "PUT  /api/admin/engineers/:id - 更新工程师",
+        "PUT  /api/admin/orders/:id/assign - 分配工程师",
+        "PUT  /api/admin/orders/:id/cancel - 取消订单",
+        "PUT  /api/admin/orders/:id/complete - 完成订单",
+        "PUT  /api/admin/orders/:id/confirm - 确认订单",
+        "PUT  /api/admin/orders/:id/start - 开始服务",
+        "管理员账号: admin / admin123",
+        "请求的资源不存在"
+      ]
+    }
+  ],
+  "totals": {
+    "endpoints": 63,
+    "methods": {
+      "DELETE": 3,
+      "GET": 27,
+      "POST": 19,
+      "PUT": 14
+    },
+    "distinct_messages": 62
+  }
+}

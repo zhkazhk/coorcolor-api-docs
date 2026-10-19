@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POST /api/orders · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#errors">Errors</a></li><li><a href="#identifiers">Identifiers</a></li><li><a href="#behaviour">Behaviour worth knowing</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="POST /api/orders">
+<p class="eyebrow">Reference · orders</p><p class="endpoint-head"><span class="method method--post">POST</span><code class="endpoint-path">/api/orders</code></p><h1>Create a service order</h1><p class="lede">Books an on-site visit: service type, machine, problem, appointment, contact and address, validated by one middleware that reports every missing field at once.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:38-57</span> (validation), <span class="cite">server/index.js:83-110</span> (handler)</dd><dt>Auth required</dt><dd>No</dd><dt>Identifier</dt><dd><code>Date.now()</code> — see Identifiers below</dd><dt>Initial status</dt><dd><code>pending</code></dd></dl>
+<h2 id="request">Request</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>serviceType</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>Service line: <code>repair</code>, <code>rent</code>, <code>supplies</code>, <code>sale</code>.</td></tr><tr><td><code>brand</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>Machine brand, free text.</td></tr><tr><td><code>model</code></td><td>body</td><td><code>string</code></td><td>No</td><td>Model number; stored as an empty string when omitted.</td></tr><tr><td><code>problemDesc</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>What is wrong, in the customer's words.</td></tr><tr><td><code>appointmentDate</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td><code>YYYY-MM-DD</code>. Not validated as a date, only as non-empty.</td></tr><tr><td><code>appointmentTime</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td><code>HH:MM</code>. Again, only non-empty is enforced.</td></tr><tr><td><code>contactName</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>At least two characters after trimming.</td></tr><tr><td><code>contactPhone</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>Must match <code>/^1[3-9]\d{9}$/</code>.</td></tr><tr><td><code>serviceAddress</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>At least five characters after trimming.</td></tr><tr><td><code>urgency</code></td><td>body</td><td><code>string</code></td><td>No</td><td><code>normal</code> (default), <code>urgent</code> or <code>low</code>. Free text, not validated.</td></tr><tr><td><code>photos</code></td><td>body</td><td><code>array</code></td><td>No</td><td>URLs or upload ids; stored as given.</td></tr><tr><td><code>remark</code></td><td>body</td><td><code>string</code></td><td>No</td><td>Free note from the customer.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="orders-create-ok">
+  <figcaption><span class="capture__id">recorded pair <code>orders-create-ok</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/orders</code></p>
+  <pre><code>{
+  "serviceType": "repair",
+  "brand": "Canon",
+  "model": "iRC3322L",
+  "problemDesc": "Paper jam in tray 2, red light flashing",
+  "appointmentDate": "2026-11-03",
+  "appointmentTime": "14:00",
+  "contactName": "Liu Yang",
+  "contactPhone": "13900000002",
+  "serviceAddress": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+  "urgency": "urgent"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID&gt;",
+    "order_no": "&lt;ORDER_NO&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Only the two identifiers come back. Everything else is echoed by GET /api/orders/:id.</p>
+</figure>
+<h2 id="response">Response</h2>
+<p>Only the two identifiers come back. Everything else the client just sent is not echoed, so a confirmation screen has to re-read the order.</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Notes</th></tr></thead><tbody><tr><td><code>data.id</code></td><td>Order id, a millisecond timestamp as a string. Used in every order URL.</td></tr><tr><td><code>data.order_no</code></td><td>Human-facing number: <code>CK</code> + <code>YYYYMMDD</code> + four random digits.</td></tr></tbody></table></div>
+<h2 id="errors">Errors</h2>
+<p>Validation is one middleware, <code>validateOrderData</code>. It collects every failing rule, then answers a single 400 whose <code>message</code> is the reasons joined by a full-width semicolon, in the order the rules are checked:</p>
+<figure class="capture" data-capture="orders-create-validation">
+  <figcaption><span class="capture__id">recorded pair <code>orders-create-validation</code></span> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/orders</code></p>
+  <pre><code>{
+  "serviceType": "",
+  "brand": "Canon",
+  "problemDesc": "",
+  "appointmentDate": "",
+  "appointmentTime": "",
+  "contactName": "L",
+  "contactPhone": "1390000",
+  "serviceAddress": "Here"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "服务类型不能为空；问题描述不能为空；预约日期不能为空；预约时间不能为空；请输入正确的联系人姓名；请输入正确的手机号；请输入详细的服务地址"
+}</code></pre>
+  
+  <p class="capture__note">All eight field checks run before the response, and the reasons are joined into one string.</p>
+</figure>
+<div class="table-wrap"><table><thead><tr><th>Order</th><th>Rule</th><th>Reason text (verbatim)</th></tr></thead><tbody><tr><td>1</td><td><code>serviceType</code> non-empty</td><td>服务类型不能为空</td></tr><tr><td>2</td><td><code>brand</code> non-empty</td><td>品牌不能为空</td></tr><tr><td>3</td><td><code>problemDesc</code> non-empty</td><td>问题描述不能为空</td></tr><tr><td>4</td><td><code>appointmentDate</code> non-empty</td><td>预约日期不能为空</td></tr><tr><td>5</td><td><code>appointmentTime</code> non-empty</td><td>预约时间不能为空</td></tr><tr><td>6</td><td><code>contactName</code> ≥ 2 chars</td><td>请输入正确的联系人姓名</td></tr><tr><td>7</td><td><code>contactPhone</code> matches the mobile pattern</td><td>请输入正确的手机号</td></tr><tr><td>8</td><td><code>serviceAddress</code> ≥ 5 chars</td><td>请输入详细的服务地址</td></tr></tbody><caption>Reasons appear in this order, joined with ；. A client that wants to highlight one input has to match on the string.</caption></table></div>
+<div class="note note--warn"><span class="note__label">The response has no field name</span><p>Nothing in the body says <em>which</em> input failed, so the console has to parse the joined prose or repeat the same eight rules client-side. See <a href="../errors/index.html#E-ORD-VALIDATION">E-ORD-VALIDATION</a>.</p></div>
+<h2 id="identifiers">Identifiers</h2>
+<p><code>id</code> is <code>Date.now().toString()</code> (<span class="cite">server/index.js:87</span>). Two orders submitted within the same millisecond receive the same id, and the second one shadows the first on every lookup. The order number is not a substitute: it is <code>CK</code> + date + four random digits, which is a 10 000-value space per day.</p>
+<p>This is a documentation fact worth repeating on the page rather than leaving in a ticket, because it changes how a client should behave: never treat <code>id</code> as globally unique, and avoid parallel submissions from one session. <a href="../errors/index.html#E-ORD-ID-COLLISION">E-ORD-ID-COLLISION</a> has the reproduction.</p>
+<h2 id="behaviour">Behaviour worth knowing</h2>
+<ul><li>No authorization check. An unauthenticated caller can create an order for any phone number and address they like, and the record will look like a real booking.</li><li>The middleware validates <code>contactPhone</code> properly, while the SMS routes next door accept any eleven characters — the two endpoints disagree about what a phone number is.</li><li>Dates and times are only checked for presence. <code>2020-01-01</code> and <code>99:99</code> are accepted, so past-dated bookings are a client-side problem by design.</li><li>The created order starts as <code>pending</code> with an empty <code>timeline</code>. See <a href="put-admin-orders-assign.html#state-machine">the state machine</a> for what can happen next.</li></ul>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>orders-create-ok</code>, <code>orders-create-validation</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

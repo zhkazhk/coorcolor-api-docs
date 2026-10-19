@@ -1,0 +1,7 @@
+# Keep LF in the repository. The site generator writes LF, and the CI job
+# rebuilds and fails on any diff — a CRLF working copy would make every build
+# look stale.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary

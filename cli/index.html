@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shyzctl — contract CLI · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html">API reference</a><a href="../cli/index.html" aria-current="page">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#why">Why a CLI and not a wiki</a></li><li><a href="#help">Top-level help</a></li><li><a href="#commands">Commands</a></li><li><a href="#exit-codes">Exit codes</a></li><li><a href="#examples">Worked examples</a></li><li><a href="#requirements">Requirements</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../api/index.html">API reference</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article>
+<p class="eyebrow">Reference · tool</p>
+<h1>shyzctl</h1>
+<p class="lede">A small command-line tool that keeps this documentation honest. It derives the API contract from the Express source, records examples from the running service, answers questions about the error catalogue, and fails the build when a page drifts from the code.</p>
+<h2 id="why">Why a CLI and not a wiki</h2>
+<p>Documentation written next to code decays the moment the code moves. The usual answer is discipline. The answer here is a tool with a narrow job and an exit code: an endpoint that exists in a page but not in the contract is an error, not a review comment. Everything the site claims can be re-derived in one command.</p>
+<pre><code>python tools/shyzctl.py contract build    # parse server/index.js -&gt; contract JSON
+python tools/shyzctl.py verify            # does every page still match?
+python tools/capture.py                   # re-record the 39 examples</code></pre>
+<h2 id="help">Top-level help</h2>
+<pre><code>usage: shyzctl [-h] [--version] &lt;command&gt; ...
+
+Documentation contract CLI for the CoorColor / SHYZ API reference site.
+
+positional arguments:
+  &lt;command&gt;
+    contract   derive or re-check the API contract
+    endpoints  list endpoints from the contract
+    show       print one endpoint with its documented errors
+    explain    look up an error catalogue entry
+    verify     check the published site against the contract
+    docs       build the static site
+    exitcodes  print the exit-code table
+
+options:
+  -h, --help   show this help message and exit
+  --version    show program's version number and exit
+
+Exit codes: 0=OK, 1=FINDINGS, 2=USAGE, 3=MISSING_INPUT, 4=DRIFT, 5=INTERNAL</code></pre>
+<h2 id="commands">Commands</h2>
+<div class="table-wrap"><table><thead><tr><th>Command</th><th>What it does</th><th>Reads</th><th>Writes</th></tr></thead><tbody><tr><td><code>contract build</code></td><td>Parses the Express source into a contract: methods, paths, status codes, error strings, source line numbers.</td><td>the source</td><td>contract JSON</td></tr><tr><td><code>contract check</code></td><td>Compares the committed contract hash with the source hash and fails on drift.</td><td>both</td><td>nothing</td></tr><tr><td><code>endpoints</code></td><td>Lists routes from the contract, filterable by method or path.</td><td>contract</td><td>stdout</td></tr><tr><td><code>show METHOD PATH</code></td><td>Prints one route: source range, auth model, status codes, every error string with its line.</td><td>contract</td><td>stdout</td></tr><tr><td><code>explain ID</code></td><td>Prints one catalogue entry, or all of them with <code>ALL</code>.</td><td>catalogue</td><td>stdout</td></tr><tr><td><code>verify</code></td><td>Checks pages against the contract, resolves every link and support tag, validates catalogue references.</td><td>everything</td><td>stdout</td></tr><tr><td><code>docs build</code></td><td>Regenerates every page of this site from the content module.</td><td>contract, captures, catalogue</td><td>HTML</td></tr><tr><td><code>exitcodes</code></td><td>Prints the exit-code table below.</td><td>the tool itself</td><td>stdout</td></tr></tbody></table></div>
+<h2 id="exit-codes">Exit codes</h2>
+<p>Every command exits with one of six codes. The table is generated from the tool's own constant, so it cannot disagree with the implementation — and argparse returns 2 for a malformed command line before the tool runs at all.</p>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>Meaning</th></tr></thead><tbody><tr><td><code>0</code></td><td>OK</td><td>Every check passed, or the requested data was printed.</td></tr><tr><td><code>1</code></td><td>FINDINGS</td><td>One or more documentation defects were found. Details on stdout.</td></tr><tr><td><code>2</code></td><td>USAGE</td><td>The command line was wrong. argparse also exits 2 for unknown flags.</td></tr><tr><td><code>3</code></td><td>MISSING_INPUT</td><td>A required file (source, contract or catalogue) does not exist.</td></tr><tr><td><code>4</code></td><td>DRIFT</td><td>The committed contract no longer matches the Express source.</td></tr><tr><td><code>5</code></td><td>INTERNAL</td><td>Unexpected crash. This is always a bug in shyzctl, never in the docs.</td></tr></tbody></table></div>
+<p>A pipeline can therefore distinguish the cases that need different responses: a broken cross-reference (1) is a documentation bug, a stale contract (4) is a code change that landed without regenerating, and 3 means the checkout is incomplete rather than wrong.</p>
+<h2 id="examples">Worked examples</h2>
+<p>Find every route whose path mentions reviews. Note that the review queue is mounted under <code>/api/admin</code>, which is exactly the mistake <a href="../errors/index.html#E-ROUTE-404">E-ROUTE-404</a> records:</p>
+<pre><code>METHOD  PATH                                   STATUS       AUTH  LINE
+------  -------------------------------------  -----------  ----  ----
+GET     /api/reviews/product/:productId        200          none  1415
+GET     /api/reviews/product/:productId/stats  200          none  1426
+POST    /api/reviews                           200,400,404  none  1440
+GET     /api/admin/reviews/pending             200          none  1483
+PUT     /api/admin/reviews/:id/approve         200,404      none  1492
+PUT     /api/admin/reviews/:id/reject          200,404      none  1509
+GET     /api/reviews/:id                       200,404      none  1526
+
+7 endpoint(s)</code></pre>
+<p>Inspect one route before writing about it. The source range, the auth model and every error string with the line that raises it come from the contract, not from the page:</p>
+<pre><code>PUT /api/admin/orders/:id/assign
+  source          server/index.js:1026-1058
+  auth            none
+  status codes    [200, 400, 404]
+  errors
+    400  请选择工程师  (line 1030)
+    404  订单不存在  (line 1036)
+    404  工程师不存在  (line 1039)</code></pre>
+<p>Ask the catalogue a question without opening the site:</p>
+<pre><code>E-ASG-MASK  An unknown order masks an unknown engineer
+  endpoint     PUT /api/admin/orders/:id/assign
+  http         404
+  message      订单不存在
+  symptom      The engineer id in the form is out of date, but the error blames the order.
+  cause        Checks run body, then order (:1036), then engineer (:1039). Two different failures share one status code and one envelope, so the second is unreachable while the first fails.
+  next step    Fix the order id first, then re-run the call to surface the engineer error. When the endpoint gains error codes, give the two 404s different ones so the UI can point at the right field.
+  verify       capture-fail passes a live engineer against an unknown order and receives 订单不存在 rather than 工程师不存在.
+  doc          api/put-admin-orders-assign.html#errors</code></pre>
+<p>And run the whole check. This is the command a CI job calls; it is also the command to run after editing any page by hand:</p>
+<pre><code>OK: contract, catalogue, links and support tags all resolve.</code></pre>
+<div class="note note--info"><span class="note__label">What verify actually inspects</span><p>Five things: every <code>data-endpoint</code> a page claims exists in the contract; every <code>data-status</code> and <code>data-message</code> a page quotes is produced by that route; every catalogue link resolves to a file and an anchor; every internal link and anchor on every page resolves; and every support tag used in the review points at a page that actually carries it.</p></div>
+<h2 id="requirements">Requirements</h2>
+<ul><li>Python 3.9 or later, standard library only. No virtualenv, no dependencies, nothing to install for the documentation build.</li><li>The recording script (<code>tools/capture.py</code>) needs the service running and, for the payment pages, a sandbox copy — see the source repository's README.</li><li>The CLI never talks to the network. The only network traffic in this workflow is <code>capture.py</code> against localhost.</li></ul>
+
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

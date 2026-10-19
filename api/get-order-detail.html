@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GET /api/orders/:id · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#errors">Errors</a></li><li><a href="#behaviour">Behaviour worth knowing</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="GET /api/orders/:id">
+<p class="eyebrow">Reference · orders</p><p class="endpoint-head"><span class="method method--get">GET</span><code class="endpoint-path">/api/orders/:id</code></p><h1>Read an order</h1><p class="lede">Returns one order, enriched with the assigned engineer's name, phone and last reported position. The engineer fields are added at read time and are not stored on the order.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:187-200</span></dd><dt>Auth required</dt><dd>No</dd><dt>Enrichment</dt><dd>Three <code>engineer_*</code> fields, only when <code>engineer_id</code> is set</dd><dt>Cache</dt><dd>None</dd></dl>
+<h2 id="request">Request</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>path</td><td><code>string</code></td><td>Yes</td><td>Order id, as returned by <code>POST /api/orders</code> in <code>data.id</code>.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="orders-detail-ok">
+  <figcaption><span class="capture__id">recorded pair <code>orders-detail-ok</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/orders/&lt;ORDER_ID&gt;</code></p>
+  <p class="capture__empty">No request body.</p>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "id": "&lt;ORDER_ID&gt;",
+    "order_no": "&lt;ORDER_NO&gt;",
+    "service_type": "repair",
+    "brand": "Canon",
+    "model": "iRC3322L",
+    "problem_desc": "Paper jam in tray 2, red light flashing",
+    "urgency": "urgent",
+    "photos": [],
+    "position": null,
+    "appointment_date": "2026-11-03",
+    "appointment_time": "14:00",
+    "contact_name": "Liu Yang",
+    "contact_phone": "13900000002",
+    "service_address": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+    "remark": "",
+    "status": "pending",
+    "created_at": "&lt;ISO-8601&gt;",
+    "updated_at": "&lt;ISO-8601&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">The order created above, with <code>engineer_*</code> fields present only after assignment.</p>
+</figure>
+<h2 id="response">Response</h2>
+<p>The full order document. Compare this payload with the one in the creation example: same object, read back.</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Notes</th></tr></thead><tbody><tr><td><code>status</code></td><td><code>pending</code>, <code>confirmed</code>, <code>processing</code>, <code>completed</code> or <code>canceled</code>.</td></tr><tr><td><code>timeline</code></td><td>Append-only log of <code>{status, time, operator, remark}</code>. Empty until the first state change.</td></tr><tr><td><code>engineer_id, engineer_name, engineer_phone</code></td><td>Present only after assignment, added from the engineer record at read time.</td></tr><tr><td><code>engineer_position</code></td><td><code>{latitude, longitude, updated_at}</code> or null; the last location the engineer reported.</td></tr><tr><td><code>amount</code></td><td>Present once the order is completed; the visit fee entered by the engineer.</td></tr><tr><td><code>solution, materials</code></td><td>Work done and parts used, both written at completion.</td></tr><tr><td><code>cancel_reason</code></td><td>Set only when an administrator cancelled the order. Customer cancellation does not set it.</td></tr></tbody></table></div>
+<div class="note note--info"><span class="note__label">Read-time enrichment is not persistence</span><p>The handler writes <code>engineer_name</code>, <code>engineer_phone</code> and <code>engineer_position</code> onto the in-memory order object (<span class="cite">server/index.js:195-197</span>). They are not saved. A list endpoint returns the same order without them, so do not assume the fields exist on every order you receive.</p></div>
+<h2 id="errors">Errors</h2>
+<div class="table-wrap"><table><thead><tr><th>HTTP</th><th>message</th><th>When it happens</th><th>What to do</th></tr></thead><tbody><tr data-status="404" data-message="订单不存在"><td><span class="chip chip--warn">HTTP 404</span></td><td><code>订单不存在</code></td><td>No order matches <code>id</code>.</td><td>Remove the order from the list or refresh it; a stale id means the record is gone, not that the request was malformed.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="orders-detail-404">
+  <figcaption><span class="capture__id">recorded pair <code>orders-detail-404</code></span> <span class="chip chip--warn">HTTP 404</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/orders/1700000000000</code></p>
+  <p class="capture__empty">No request body.</p>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "订单不存在"
+}</code></pre>
+  
+  <p class="capture__note">Unknown order id.</p>
+</figure>
+<p>The 404 carries the same <code>code: -1</code> as a validation failure, so the HTTP status is the only signal that distinguishes “gone” from “wrong”.</p>
+<h2 id="behaviour">Behaviour worth knowing</h2>
+<ul><li>No authorization check: knowing an id is sufficient to read a customer's name, phone and address.</li><li>The response is assembled per request from two collections, so an order whose <code>engineer_id</code> no longer resolves keeps the id and returns <code>engineer_name: ""</code> rather than failing.</li><li>Volatile fields scramble comparisons: <code>engineer_position.updated_at</code> changes whenever the engineer reports, and nothing in the payload version-stamps the order for caching.</li></ul>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>orders-detail-ok</code>, <code>orders-detail-404</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POST /api/wxpay/callback · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#signature">The signature can never match</a></li><li><a href="#behaviour">Behaviour worth knowing</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="POST /api/wxpay/callback">
+<p class="eyebrow">Reference · payment</p><p class="endpoint-head"><span class="method method--post">POST</span><code class="endpoint-path">/api/wxpay/callback</code></p><h1>Payment callback</h1><p class="lede">The notification endpoint the payment platform calls after a payment. It answers in XML, verifies an MD5 signature, and flips the order to paid. In this build it rejects every callback, including correctly signed ones.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:1680-1718</span></dd><dt>Auth required</dt><dd>Signature, not a token</dd><dt>Transport</dt><dd>XML in, XML out, HTTP 200 in every case</dd><dt>Status in this build</dt><dd>Cannot verify — see Signature below</dd></dl>
+<h2 id="request">Request</h2>
+<p>The platform posts an XML document with CDATA-wrapped fields. The ones the handler uses are <code>result_code</code>, <code>out_trade_no</code>, <code>transaction_id</code> and <code>sign</code>; anything else is ignored.</p>
+<figure class="capture" data-capture="payment-callback-bad-sign">
+  <figcaption><span class="capture__id">recorded pair <code>payment-callback-bad-sign</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/wxpay/callback</code></p>
+  <pre><code>&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[SUCCESS]]&gt;&lt;/return_code&gt;&lt;out_trade_no&gt;&lt;![CDATA[&lt;PAY_ORDER_NO&gt;]]&gt;&lt;/out_trade_no&gt;&lt;result_code&gt;&lt;![CDATA[SUCCESS]]&gt;&lt;/result_code&gt;&lt;sign&gt;&lt;![CDATA[DEADBEEF]]&gt;&lt;/sign&gt;&lt;/xml&gt;</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[FAIL]]&gt;&lt;/return_code&gt;&lt;return_msg&gt;&lt;![CDATA[签名错误]]&gt;&lt;/return_msg&gt;&lt;/xml&gt;</code></pre>
+  
+  <p class="capture__note">A callback with a wrong signature still returns HTTP 200; the failure is inside the XML body.</p>
+</figure>
+<h2 id="response">Response</h2>
+<p>The answer is XML, and the HTTP status is always 200. Success and failure differ only inside the body, which is what the platform reads:</p>
+<pre><code>&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[SUCCESS]]&gt;&lt;/return_code&gt;&lt;return_msg&gt;&lt;![CDATA[OK]]&gt;&lt;/return_msg&gt;&lt;/xml&gt;
+&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[FAIL]]&gt;&lt;/return_code&gt;&lt;return_msg&gt;&lt;![CDATA[签名错误]]&gt;&lt;/return_msg&gt;&lt;/xml&gt;</code></pre>
+<p>There are four failure texts: 签名错误, 系统错误, 处理失败, and the platform's own <code>err_code_des</code> when <code>result_code</code> is not SUCCESS (falling back to 支付失败).</p>
+<h2 id="signature">The signature can never match</h2>
+<p>The handler parses the body, then verifies an MD5 signature over the sorted parameters plus the merchant key. A body is never parsed:</p>
+<pre><code>app.use(bodyParser.json());            // server/index.js:14 — JSON only
+...
+const params = await wxpayUtils.parseXML(xmlData);   // :1688, receives {}</code></pre>
+<p>No XML parser is registered, so for <code>Content-Type: application/xml</code> the body parser leaves <code>req.body</code> as an empty object. <code>parseXML</code> therefore finds no fields, <code>sign</code> is undefined, and <code>verifySign</code> cannot return true.</p>
+<p>The evidence is a callback signed exactly as the platform requires — sorted <code>key=value</code> pairs, <code>&amp;key=&lt;merchant key&gt;</code>, MD5 upper-case — and it is still refused:</p>
+<figure class="capture" data-capture="payment-callback-correct-sign">
+  <figcaption><span class="capture__id">recorded pair <code>payment-callback-correct-sign</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/wxpay/callback</code></p>
+  <pre><code>&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[SUCCESS]]&gt;&lt;/return_code&gt;&lt;result_code&gt;&lt;![CDATA[SUCCESS]]&gt;&lt;/result_code&gt;&lt;out_trade_no&gt;&lt;![CDATA[&lt;PAY_ORDER_NO&gt;]]&gt;&lt;/out_trade_no&gt;&lt;transaction_id&gt;&lt;![CDATA[4200000000202611010000000001]]&gt;&lt;/transaction_id&gt;&lt;sign&gt;&lt;![CDATA[&lt;SIGN&gt;]]&gt;&lt;/sign&gt;&lt;/xml&gt;</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>&lt;xml&gt;&lt;return_code&gt;&lt;![CDATA[FAIL]]&gt;&lt;/return_code&gt;&lt;return_msg&gt;&lt;![CDATA[签名错误]]&gt;&lt;/return_msg&gt;&lt;/xml&gt;</code></pre>
+  
+  <p class="capture__note">A signature computed exactly as WeChat requires (sorted key=value, &amp;key=&lt;merchant key&gt;, MD5 upper-case) is still rejected. The global JSON body parser never reads the XML, so <code>params</code> is empty and no signature can ever match.</p>
+</figure>
+<div class="note note--danger"><span class="note__label">Consequence and workaround</span><p>Orders are never marked paid by the callback, so a paid rental stays <code>pending</code> until something queries it. The workaround that does work is <code>GET /api/wxpay/order/:orderNo</code>, which asks the platform directly and flips the status on <code>trade_state: SUCCESS</code>. The fix is to register a text parser for <code>application/xml</code> before this route. <a href="../errors/index.html#E-PAY-CALLBACK-XML">E-PAY-CALLBACK-XML</a>.</p></div>
+<h2 id="behaviour">Behaviour worth knowing</h2>
+<ul><li>Failure is invisible to monitoring: every response is HTTP 200, so an uptime check cannot tell a working callback from a broken one. Watch the body, not the status.</li><li>A callback that does verify would update the order by <code>out_trade_no</code>, and would be safely repeatable — the handler assigns <code>status = 'paid'</code> rather than incrementing anything.</li><li>The route has no anti-replay protection of its own; it relies on the platform's signature, which is precisely the part that is not working here.</li><li>The callback configures <code>notify_url</code> in <code>wxpay-config.js</code>, which points at the reverse-proxied host — it is not the <code>localhost</code> base URL the rest of this reference uses.</li></ul>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>payment-callback-bad-sign</code>, <code>payment-callback-correct-sign</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

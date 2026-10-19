@@ -1,0 +1,96 @@
+<h2>Assign an engineer to an order</h2>
+
+<p>Call this endpoint to attach an engineer to an existing print-service order and move the order to <code>processing</code>. The handler copies the engineer's id, name and phone onto the order, appends a timeline entry, and returns the full updated order. Use it from admin or dispatch screens where a staff member picks an engineer for a job.</p>
+
+<h3>Request</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>In</th>
+      <th>Type</th>
+      <th>Required</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td>path</td>
+      <td>string</td>
+      <td>yes</td>
+      <td>Order id, as returned by <code>POST /api/orders</code> in <code>data.id</code>.</td>
+    </tr>
+    <tr>
+      <td><code>engineer_id</code></td>
+      <td>body</td>
+      <td>string</td>
+      <td>yes</td>
+      <td>Engineer id of an existing engineer record, for example <code>engineer001</code>. A missing, empty or otherwise falsy value is rejected.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Send the body as JSON:</p>
+
+<pre><code>{
+  "engineer_id": "engineer001"
+}</code></pre>
+
+<pre><code>curl -X PUT "https://&lt;HOST&gt;/api/admin/orders/&lt;ORDER_ID&gt;/assign" \
+  -H "Content-Type: application/json" \
+  -d '{"engineer_id":"engineer001"}'</code></pre>
+
+<h3>Response</h3>
+
+<p>Success returns HTTP 200 with <code>code</code> set to <code>0</code> and <code>data</code> holding the complete updated order document:</p>
+
+<pre><code>{"code":0,"data":{"id":"&lt;ORDER_ID&gt;","order_no":"&lt;ORDER_NO&gt;","service_type":"repair","brand":"HP","model":"","problem_desc":"Drum unit replacement","urgency":"normal","photos":[],"position":null,"appointment_date":"2026-11-04","appointment_time":"09:30","contact_name":"Wang Fang","contact_phone":"13900000003","service_address":"Floor 6, 1000 Century Avenue, Pudong, Shanghai","remark":"","status":"processing","created_at":"&lt;ISO-8601&gt;","updated_at":"&lt;ISO-8601&gt;","engineer_id":"engineer001","engineer_name":"张工程师","engineer_phone":"13800138001","timeline":[{"status":"processing","time":"&lt;ISO-8601&gt;","operator":"管理员","remark":"分配给工程师：张工程师"}]}}</code></pre>
+
+<p>Compared with the order before the call, <code>engineer_id</code>, <code>engineer_name</code> and <code>engineer_phone</code> now hold the engineer record's values, <code>status</code> is <code>processing</code>, <code>updated_at</code> is refreshed, and one timeline entry was appended. Every other field is unchanged.</p>
+
+<h3>Errors</h3>
+
+<p>Every failure returns <code>{"code":-1,"message":"..."}</code>. There are no machine-readable error codes, so match on the message string.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>HTTP</th>
+      <th>message</th>
+      <th>When it happens</th>
+      <th>What to do</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>400</td>
+      <td><code>请选择工程师</code></td>
+      <td><code>engineer_id</code> is missing, empty or otherwise falsy. Raised before the order is looked up.</td>
+      <td>Require an engineer selection in the UI and block the call until one is set.</td>
+    </tr>
+    <tr>
+      <td>404</td>
+      <td><code>订单不存在</code></td>
+      <td>No order matches <code>id</code>.</td>
+      <td>Refresh the order list; the order may have been removed.</td>
+    </tr>
+    <tr>
+      <td>404</td>
+      <td><code>工程师不存在</code></td>
+      <td>No engineer matches <code>engineer_id</code>. Raised after the order resolves.</td>
+      <td>Reload the engineer list and send an id that still exists.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Behaviour worth knowing</h3>
+
+<ul>
+  <li>The handler writes five things: the three engineer fields (<code>engineer_id</code>, <code>engineer_name</code>, <code>engineer_phone</code>), <code>status</code> set to <code>processing</code>, a new timeline entry, and a refreshed <code>updated_at</code>. The timeline entry is <code>{"status":"processing","time":"&lt;ISO-8601&gt;","operator":"管理员","remark":"分配给工程师：&lt;engineer name&gt;"}</code>.</li>
+  <li>Checks run in a fixed order: body first, then order, then engineer. Because the body check comes first, an unspecified <code>engineer_id</code> returns 400 even when the order is also wrong; because the order check comes before the engineer lookup, an unknown order returns <code>订单不存在</code> and hides an unknown engineer.</li>
+  <li>No token check runs in this handler. Nothing on the server enforces admin rights here, so treat access control as outside this endpoint and do not rely on it to reject a caller.</li>
+  <li><code>status</code> is set to <code>processing</code> unconditionally; there is no state guard. Assigning an order that is already <code>completed</code> silently reopens it, and the timeline gains a <code>processing</code> entry with no corresponding <code>completed</code> reversal.</li>
+  <li>Re-assigning an order that is already <code>processing</code> succeeds and appends another timeline entry, so the timeline can hold several assignment records.</li>
+</ul>

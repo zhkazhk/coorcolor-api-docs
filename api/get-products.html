@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GET /api/products · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#rules">Rules that are not in the parameters</a></li><li><a href="#errors">Errors</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="GET /api/products">
+<p class="eyebrow">Reference · catalogue</p><p class="endpoint-head"><span class="method method--get">GET</span><code class="endpoint-path">/api/products</code></p><h1>List products</h1><p class="lede">Returns the catalogue the shop renders: repairs, rentals and supplies in one list, filterable by category, with inactive items hidden unless asked for.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:780-798</span></dd><dt>Auth required</dt><dd>No</dd><dt>Pagination</dt><dd>None — the whole catalogue is returned</dd><dt>Sort</dt><dd><code>created_at</code> descending</dd></dl>
+<h2 id="request">Request</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>category</code></td><td>query</td><td><code>string</code></td><td>No</td><td>One of <code>repair</code>, <code>rent</code>, <code>supplies</code>, <code>sale</code>. Any other value, including <code>all</code>, disables the filter.</td></tr><tr><td><code>includeInactive</code></td><td>query</td><td><code>string</code></td><td>No</td><td>The literal string <code>true</code> includes products whose status is not active. Any other value keeps them hidden.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="products-list">
+  <figcaption><span class="capture__id">recorded pair <code>products-list</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/products</code></p>
+  <p class="capture__empty">No request body.</p>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": [
+    {
+      "id": "product001",
+      "name": "打印机上门维修服务",
+      "category": "repair",
+      "price": 99,
+      "originalPrice": 150,
+      "description": "专业工程师上门检测维修，包含常规故障诊断和修复",
+      "features": [
+        "专业工程师",
+        "2小时响应",
+        "正品配件",
+        "3个月质保"
+      ],
+      "image": "🔧",
+      "stock": 999,
+      "sales": 1256,
+      "created_at": "&lt;ISO-8601&gt;",
+      "status": "active",
+      "updated_at": "&lt;ISO-8601&gt;"
+    },
+    {
+      "id": "product002",
+      "name": "复印机深度保养",
+      "category": "repair",
+      "price": 199,
+      "originalPrice": 299,
+      "description": "复印机全面清洁保养，提升打印质量和设备寿命",
+      "features": [
+        "深度清洁",
+        "部件检查",
+        "性能优化",
+        "延长寿命"
+      ],
+      "image": "✨",
+      "stock": 999,
+      "sales": 589,
+      "created_at": "&lt;ISO-8601&gt;",
+      "status": "active",
+      "updated_at": "&lt;ISO-8601&gt;"
+    }
+  ]
+}</code></pre>
+  <p class="capture__note">Showing the first 2 of 47 items. The complete payload is recorded as capture <code>products-list</code> in <code>contracts/captures.json</code>.</p>
+  <p class="capture__note">Every active product, newest first.</p>
+</figure>
+<p>With a category, the list narrows to that category:</p>
+<figure class="capture" data-capture="products-by-category">
+  <figcaption><span class="capture__id">recorded pair <code>products-by-category</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/products?{"category": "rent"}</code></p>
+  <p class="capture__empty">No request body.</p>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": [
+    {
+      "id": "product006",
+      "name": "佳能IR-ADV 4525租赁",
+      "category": "rent",
+      "price": 899,
+      "originalPrice": 1200,
+      "description": "佳能高速数码复合机，适合中型企业使用",
+      "features": [
+        "免押金",
+        "含耗材",
+        "免费维修",
+        "按月付费"
+      ],
+      "image": "/images/c3322l图片.jpg",
+      "stock": 50,
+      "sales": 156,
+      "created_at": "&lt;ISO-8601&gt;",
+      "status": "active",
+      "updated_at": "&lt;ISO-8601&gt;"
+    },
+    {
+      "id": "product007",
+      "name": "惠普M405dn租赁",
+      "category": "rent",
+      "price": 1299,
+      "originalPrice": 1499,
+      "description": "惠普黑白激光打印机，适合小型办公室",
+      "features": [
+        "免押金",
+        "高速打印",
+        "自动双面",
+        "三年质保"
+      ],
+      "image": "🖨️",
+      "stock": 100,
+      "sales": 342,
+      "created_at": "&lt;ISO-8601&gt;",
+      "updated_at": "&lt;ISO-8601&gt;",
+      "status": "active"
+    }
+  ]
+}</code></pre>
+  <p class="capture__note">Showing the first 2 of 5 items. The complete payload is recorded as capture <code>products-by-category</code> in <code>contracts/captures.json</code>.</p>
+  <p class="capture__note"><code>category=rent</code> narrows the list; <code>all</code> (or omitting it) does not filter at all.</p>
+</figure>
+<h2 id="response">Response</h2>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Notes</th></tr></thead><tbody><tr><td><code>data[]</code></td><td>Array of product objects, newest first. Ten are seeded on first start.</td></tr><tr><td><code>id</code></td><td>Stable string such as <code>product001</code>; use it in <code>POST /api/orders/buy</code>.</td></tr><tr><td><code>price</code></td><td>Price per unit in CNY, a number.</td></tr><tr><td><code>originalPrice</code></td><td>List price, for a strike-through. Defaults to <code>price</code>.</td></tr><tr><td><code>stock</code></td><td>Units available. Decremented by a purchase, never restored by a cancellation.</td></tr><tr><td><code>sales</code></td><td>Units sold, used for ranking. Incremented on purchase.</td></tr><tr><td><code>status</code></td><td>May be absent on older records; absence means active.</td></tr><tr><td><code>features</code></td><td>Array of short selling points, rendered as tags.</td></tr><tr><td><code>image</code></td><td>Either an emoji or an image URL. Render both, they are not distinguishable by type.</td></tr></tbody></table></div>
+<h2 id="rules">Rules that are not in the parameters</h2>
+<ul><li>The status filter reads <code>!p.status || p.status === 'active'</code>. A product with an empty or missing <code>status</code> is therefore visible, which is how the ten seeded rows behave — do not treat a visible product as proof of an explicit active flag.</li><li>There is no pagination and no limit. The response is the entire catalogue on every call, which is fine at ten rows and is the first thing to change if the catalogue grows past a few hundred.</li><li><code>GET /api/products/:id</code> answers 404 产品不存在 for an unknown id, but does not filter on status — a de-listed product still resolves by id.</li></ul>
+<h2 id="errors">Errors</h2>
+<figure class="capture" data-capture="products-detail-404">
+  <figcaption><span class="capture__id">recorded pair <code>products-detail-404</code></span> <span class="chip chip--warn">HTTP 404</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/products/product999</code></p>
+  <p class="capture__empty">No request body.</p>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "产品不存在"
+}</code></pre>
+  
+  <p class="capture__note">Unknown id. Status is 404 but <code>code</code> is still only -1.</p>
+</figure>
+<p>The list itself has no failure path: an unknown category returns an empty array with HTTP 200 rather than 400, so a typo in the query string looks like an empty catalogue. The only 404 on the product routes is the detail call above.</p>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>products-list</code>, <code>products-by-category</code>, <code>products-detail-404</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

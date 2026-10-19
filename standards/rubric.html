@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review rubric · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html" aria-current="page">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#dimensions">The four dimensions</a></li><li><a href="#anchors">Anchor levels</a></li><li><a href="#decision-rule">The decision rule</a></li><li><a href="#procedure">How to run the review</a></li><li><a href="#tags">Support tags</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../api/index.html">API reference</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article>
+<p class="eyebrow">Standards</p>
+<h1>Review rubric</h1>
+<p class="lede">Four dimensions, scored 1 to 5, plus a decision rule that is written down before the drafts are read — so the verdict is repeatable and the reasoning is auditable rather than a matter of taste.</p>
+<h2 id="dimensions">The four dimensions</h2>
+<div class="table-wrap"><table><thead><tr><th>Dimension</th><th>Weight</th><th>What it asks</th></tr></thead><tbody><tr><td><strong>Accuracy</strong></td><td>0.4</td><td>Is every claim true of the system? Field names, status codes, message strings, ordering, side effects.</td></tr><tr><td><strong>Completeness</strong></td><td>0.2</td><td>Are all the required sections present, and is anything a caller needs missing?</td></tr><tr><td><strong>Actionability</strong></td><td>0.2</td><td>Can a developer act on it without asking a question — examples runnable, “what to do” concrete?</td></tr><tr><td><strong>Tone</strong></td><td>0.2</td><td>Sentence case, second person, no marketing, consistent terms, no filler.</td></tr></tbody></table></div>
+<h2 id="anchors">Anchor levels</h2>
+<div class="table-wrap"><table><thead><tr><th>Score</th><th>Accuracy</th><th>Completeness</th><th>Actionability</th><th>Tone</th></tr></thead><tbody><tr><td><strong>5</strong></td><td>Every claim matches the source and the captures. No internal inconsistency.</td><td>Every required section, plus the one non-obvious fact a reader would have missed.</td><td>Every example runnable as written; every failure row says what to change.</td><td>Reads as one voice; nothing to trim.</td></tr><tr><td><strong>4</strong></td><td>One trivial slip that does not mislead (a miscount, a vague pronoun).</td><td>All required sections; one useful detail absent.</td><td>Examples runnable; one guidance row generic.</td><td>Consistent, with one flat sentence.</td></tr><tr><td><strong>3</strong></td><td>A claim a careful reader would have to re-check; still recoverable.</td><td>A required section thin or merged away.</td><td>Examples need an edit before they run.</td><td>Voice drifts; marketing adjective or filler present.</td></tr><tr><td><strong>2</strong></td><td>A misleading claim: wrong status, wrong field, wrong order of checks.</td><td>A required section missing.</td><td>No usable example, or advice that would not work.</td><td>Second person abandoned; hedging throughout.</td></tr><tr><td><strong>1</strong></td><td>Contradicts the ground truth.</td><td>Most required content missing.</td><td>Nothing a developer can apply.</td><td>Unreadable or off-audience.</td></tr></tbody></table></div>
+<h2 id="decision-rule">The decision rule</h2>
+<p>Scores alone invite arithmetic to settle an argument. The rule used here puts accuracy first and is applied in this order:</p>
+<ol><li>Count <strong>accuracy defects</strong>: each distinct claim that is untrue of the system, or internally inconsistent with the same document. Score accuracy from that count.</li><li>If one draft has <strong>strictly fewer accuracy defects</strong> and is not worse on completeness, actionability or tone, it is <strong>preferred</strong>.</li><li>If the defect counts are equal, the result is a <strong>tie</strong> — regardless of the weighted score. A pleasant document that is wrong is still wrong.</li><li>Report weighted scores as context. They never overturn the accuracy test.</li></ol>
+<div class="note note--info"><span class="note__label">Why not choose on the weighted score</span><p>A weighted average lets strengths in tone buy off a factual error. In an API reference a wrong field name costs a developer an afternoon; elegant prose saves them ten seconds. The weights still matter — they decide how much a defect costs once the accuracy question is settled — but they do not decide the winner.</p></div>
+<h2 id="procedure">How to run the review</h2>
+<ol><li>Fix the brief in writing before drafting: the facts, the required sections, the tag allowlist, the length. Both drafts get the same brief and no rubric.</li><li>Draft independently. No shared context, no sight of the other draft, the same stylesheet applied afterwards so formatting cannot influence the read.</li><li>Read both against the source, not against each other. Keep a defect list with the line number or capture id that proves each one.</li><li>Score, apply the decision rule, then write one line of reasoning and the support tags. The tags are the audit trail: they point at the pages that were checked.</li></ol>
+<h2 id="tags">Support tags</h2>
+<p>Every verdict carries tags of the form <code>[API-ref]</code>, <code>[error-catalog]</code> or <code>[exit-code]</code>, and each tag resolves to a page anchor on this site. A tag is a claim that a human verified that page against the source during this review — not a label for the topic.</p>
+<div class="table-wrap"><table><thead><tr><th>Tag</th><th>Means</th><th>Checked against</th></tr></thead><tbody><tr><td><code>[API-ref]</code></td><td>A reference page was compared with the contract and the captures.</td><td><code>contracts/shyz-api-contract.json</code>, <code>contracts/captures.json</code></td></tr><tr><td><code>[error-catalog]</code></td><td>A catalogue entry's symptom, cause and next step were re-read against the source line it cites.</td><td><code>errors/catalog.json</code>, source</td></tr><tr><td><code>[exit-code]</code></td><td>The exit-code table was compared with the tool's own constant.</td><td><code>tools/shyzctl.py</code>, <code>EXIT_CODES</code></td></tr></tbody></table></div>
+
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

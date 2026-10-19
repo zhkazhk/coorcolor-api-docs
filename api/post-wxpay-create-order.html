@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POST /api/wxpay/create-order · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#amount">The amount is not verified</a></li><li><a href="#errors">Errors</a></li><li><a href="#behaviour">Behaviour worth knowing</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="POST /api/wxpay/create-order">
+<p class="eyebrow">Reference · payment</p><p class="endpoint-head"><span class="method method--post">POST</span><code class="endpoint-path">/api/wxpay/create-order</code></p><h1>Create a payment order</h1><p class="lede">Stores a rental order, calls the payment platform's unified order endpoint, and returns the parameters a mini program passes to <code>wx.requestPayment</code>.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:1619-1677</span></dd><dt>Auth required</dt><dd>No</dd><dt>Amount</dt><dd>Taken from the request body — not recomputed</dd><dt>Evidence</dt><dd>Recorded against a sandbox with stubbed outbound calls</dd></dl>
+<div class="note note--warn"><span class="note__label">About the examples on this page</span><p>This endpoint is the only one whose outbound call reaches a third party. The captures below were recorded against a sandbox copy of the service: <code>unifiedOrder</code> and <code>queryOrder</code> are stubbed, and the merchant key is a dummy. The parameter names, the MD5 signing order and the response shape are the real implementation; the signature value is not reproducible outside the sandbox.</p></div>
+<h2 id="request">Request</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>items</code></td><td>body</td><td><code>array</code></td><td>Yes</td><td>Line items, passed through to the stored order unchanged. A non-empty array is required.</td></tr><tr><td><code>totalAmount</code></td><td>body</td><td><code>number</code></td><td>Yes</td><td>Amount in CNY. Multiplied by 100 and sent as <code>total_fee</code> in fen.</td></tr><tr><td><code>openid</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>The payer's mini-program openid, obtained from <code>POST /api/user/getOpenid</code>.</td></tr><tr><td><code>contactName</code></td><td>body</td><td><code>string</code></td><td>No</td><td>Stored on the order; an empty string when omitted.</td></tr><tr><td><code>contactPhone</code></td><td>body</td><td><code>string</code></td><td>No</td><td>Stored as given, unvalidated.</td></tr><tr><td><code>serviceAddress</code></td><td>body</td><td><code>string</code></td><td>No</td><td>Stored as given, unvalidated.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="payment-create-ok">
+  <figcaption><span class="capture__id">recorded pair <code>payment-create-ok</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/wxpay/create-order</code></p>
+  <pre><code>{
+  "items": [
+    {
+      "productId": "product006",
+      "name": "Canon IR-ADV 4525 rental",
+      "quantity": 1,
+      "price": 899
+    }
+  ],
+  "totalAmount": 899,
+  "contactName": "Liu Yang",
+  "contactPhone": "13900000002",
+  "serviceAddress": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+  "openid": "o0000000000000000000000000000000"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "orderId": "&lt;EPOCH_MS&gt;",
+    "orderNo": "&lt;PAY_ORDER_NO&gt;",
+    "timeStamp": "&lt;UNIX_SECONDS&gt;",
+    "nonceStr": "&lt;NONCE_STR&gt;",
+    "package": "prepay_id=&lt;PREPAY_ID&gt;",
+    "signType": "MD5",
+    "paySign": "&lt;PAY_SIGN&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Sandbox only: the outbound unified-order call is stubbed, so <code>package</code> holds a fixed prepay id and the signature is computed with a dummy merchant key.</p>
+</figure>
+<h2 id="response">Response</h2>
+<p>Four of the five fields are handed straight to <code>wx.requestPayment</code>; the order identifiers come from this service.</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Notes</th></tr></thead><tbody><tr><td><code>data.orderId</code></td><td>Internal order id, <code>Date.now()</code> as a string.</td></tr><tr><td><code>data.orderNo</code></td><td>Merchant order number: <code>WX</code> + 14-digit timestamp + four random digits.</td></tr><tr><td><code>data.timeStamp</code></td><td>Unix seconds as a string, for <code>wx.requestPayment</code>.</td></tr><tr><td><code>data.nonceStr</code></td><td>32-character random string.</td></tr><tr><td><code>data.package</code></td><td><code>prepay_id=wx…</code>, from the unified order response.</td></tr><tr><td><code>data.signType</code></td><td><code>MD5</code>.</td></tr><tr><td><code>data.paySign</code></td><td>MD5 over the sorted parameters plus the merchant key, upper-case hex.</td></tr></tbody></table></div>
+<h2 id="amount">The amount is not verified</h2>
+<p>The handler reads <code>totalAmount</code> from the body, stores it, and converts it for the payment platform (<span class="cite">server/index.js:1657</span>). The product records are never consulted, so the price catalogue on the <code>GET /api/products</code> page has no bearing on what is charged. Twelve rentals at ¥899 each, submitted as one fen:</p>
+<figure class="capture" data-capture="payment-create-tiny-amount">
+  <figcaption><span class="capture__id">recorded pair <code>payment-create-tiny-amount</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/wxpay/create-order</code></p>
+  <pre><code>{
+  "items": [
+    {
+      "productId": "product006",
+      "name": "Canon IR-ADV 4525 rental",
+      "quantity": 12,
+      "price": 899
+    }
+  ],
+  "totalAmount": 0.01,
+  "contactName": "Liu Yang",
+  "contactPhone": "13900000002",
+  "serviceAddress": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+  "openid": "o0000000000000000000000000000000"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "orderId": "&lt;EPOCH_MS&gt;",
+    "orderNo": "&lt;PAY_ORDER_NO&gt;",
+    "timeStamp": "&lt;UNIX_SECONDS&gt;",
+    "nonceStr": "&lt;NONCE_STR&gt;",
+    "package": "prepay_id=&lt;PREPAY_ID&gt;",
+    "signType": "MD5",
+    "paySign": "&lt;PAY_SIGN&gt;"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Twelve rentals priced at 899 each, charged one fen. The amount comes from the client and is never recomputed from the product records.</p>
+</figure>
+<div class="note note--danger"><span class="note__label">Do not ship this as-is</span><p>A client controls the payable amount. The fix belongs in this handler: load each <code>productId</code>, recompute the total from the stored price, and reject the body when <code>totalAmount</code> disagrees. <a href="../errors/index.html#E-PAY-AMOUNT">E-PAY-AMOUNT</a> records the evidence.</p></div>
+<h2 id="errors">Errors</h2>
+<div class="table-wrap"><table><thead><tr><th>HTTP</th><th>message</th><th>When it happens</th><th>What to do</th></tr></thead><tbody><tr data-status="400" data-message="参数不完整"><td><span class="chip chip--warn">HTTP 400</span></td><td><code>参数不完整</code></td><td><code>items</code> is empty, or <code>totalAmount</code> is zero or absent, or <code>openid</code> is missing. One message covers all three.</td><td>Send all three. Reuse an openid already obtained for the session; do not mint one per attempt.</td></tr><tr data-status="500" data-message="微信支付功能未配置"><td><span class="chip chip--danger">HTTP 500</span></td><td><code>微信支付功能未配置</code></td><td>The payment utility module failed to load at start-up.</td><td>Check the server log at boot; the module is loaded in a try/catch and the failure is only printed.</td></tr><tr data-status="500" data-message="创建订单失败"><td><span class="chip chip--danger">HTTP 500</span></td><td><code>创建订单失败</code></td><td>The unified order call failed or timed out. The stored order is left in <code>pending</code>.</td><td>Retry, and reconcile afterwards with <code>GET /api/wxpay/order/:orderNo</code> rather than creating a second order.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="payment-create-missing-openid">
+  <figcaption><span class="capture__id">recorded pair <code>payment-create-missing-openid</code></span> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/wxpay/create-order</code></p>
+  <pre><code>{
+  "items": [],
+  "totalAmount": 0
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "参数不完整"
+}</code></pre>
+  
+  <p class="capture__note"><code>items</code>, <code>totalAmount</code> and <code>openid</code> are all required, and one message covers all three.</p>
+</figure>
+<h2 id="behaviour">Behaviour worth knowing</h2>
+<ul><li>The order is written to storage before the platform is called, so a failed payment attempt leaves a <code>pending</code> order behind. Nothing expires it.</li><li>Product stock is not touched: this path is separate from <code>POST /api/orders/buy</code>, which does decrement stock and apply coupons.</li><li><code>Math.round(totalAmount * 100)</code> is the only conversion. A fractional yuan amount is rounded, not rejected.</li><li>There is no idempotency key. Two submissions create two orders and two prepay attempts.</li></ul>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>payment-create-ok</code>, <code>payment-create-tiny-amount</code>, <code>payment-create-missing-openid</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoorColor API — documentation sample</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="index.html" aria-current="page">Overview</a><a href="api/index.html">API reference</a><a href="cli/index.html">CLI</a><a href="errors/index.html">Error catalogue</a><a href="standards/style-guide.html">Style guide</a><a href="standards/rubric.html">Rubric</a><a href="review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#start">Start here</a></li><li><a href="#verified">How it is verified</a></li><li><a href="#scope">Scope, stated plainly</a></li><li><a href="#why">What the sample is meant to show</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="api/index.html">API reference</a></li><li><a href="cli/index.html">CLI</a></li><li><a href="errors/index.html">Error catalogue</a></li><li><a href="standards/style-guide.html">Style guide</a></li><li><a href="standards/rubric.html">Rubric</a></li><li><a href="review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article>
+<p class="eyebrow">Writing sample</p>
+<h1>Documentation for an API I built, and the checks that keep it true</h1>
+<p class="lede">CoorColor is a printer-service back office — 63 HTTP endpoints behind a mini program and an admin console. This site is the documentation for it: 9 reference pages, a CLI reference, a 17-entry error catalogue, a style guide, a review rubric, and a model-versus-model review that applies the rubric to two drafts of the same page.</p>
+<h2 id="start">Start here</h2>
+<div class="grid"><a class="card" href="api/index.html"><h3>API reference</h3><p>Overview, the response envelope, and the full inventory of 63 endpoints with eight documented in depth.</p></a><a class="card" href="api/authentication.html"><h3>Authentication</h3><p>The envelope, the Bearer rule the shipped client gets wrong, and the two token shapes.</p></a><a class="card" href="cli/index.html"><h3>shyzctl</h3><p>The contract CLI: real --help output, six subcommands, and an exit-code table that CI can branch on.</p></a><a class="card" href="errors/index.html"><h3>Error catalogue</h3><p>17 entries. Symptom, cause, next step, document — each backed by a failing and a passing capture.</p></a><a class="card" href="standards/style-guide.html"><h3>Style guide</h3><p>One page: voice, page skeleton, terminology, code samples, when to break the rules.</p></a><a class="card" href="standards/rubric.html"><h3>Review rubric</h3><p>Four dimensions, five anchor levels each, and the decision rule used in the review.</p></a></div>
+<h2 id="verified">How it is verified</h2>
+<p>Nothing on this site is typed from memory. Three files decide what is true, and every page is generated from them:</p>
+<dl class="meta"><dt>contracts/shyz-api-contract.json</dt><dd>Parsed from the Express source: 63 endpoints, their status codes, their exact error strings and the line of code that raises each one.</dd><dt>contracts/captures.json</dt><dd>39 request/response pairs recorded against the running service with <code>tools/capture.py</code>. Every example on this site is one of these pairs.</dd><dt>errors/catalog.json</dt><dd>The catalogue as data. The page you read is rendered from it, and <code>shyzctl explain</code> answers from it.</dd></dl>
+<pre><code>python tools/shyzctl.py contract check     # has the source drifted?
+python tools/shyzctl.py verify             # does the site still match?
+python tools/capture.py                    # re-record every example</code></pre>
+<p>The <code>verify</code> run is the point. It fails the build when a page documents an endpoint the contract does not have, quotes an error string the source does not raise, cites a capture id that was never recorded, or links to an anchor that does not exist. The exit codes are documented, so a pipeline can tell a broken link from a stale contract.</p>
+<h2 id="scope">Scope, stated plainly</h2>
+<ul><li>Eight of the 63 endpoints are documented in depth — the eight most likely to be integrated: sign-in, SMS code, product list, order creation, order detail, assignment, payment creation, payment callback. The other 55 appear in the inventory with their status codes, generated from the contract.</li><li>The two payment pages were recorded against a sandbox copy of the service whose outbound calls to the payment platform are stubbed and whose merchant key is a dummy. Signing is the real implementation; no live merchant account was touched.</li><li>Credentials were redacted line-in-place before publication. <code>tools/redact_snapshot.py</code> does the redaction and refuses to write a file if any credential-shaped string survives.</li><li>This is a sample of the writing and the verification, not a product manual. The product is an internal system; the Chinese strings are real because they are wire values.</li></ul>
+<h2 id="why">What the sample is meant to show</h2>
+<ul><li>I can turn a codebase I own into documentation without inventing anything: the contract and the captures are the source, and the prose reads the facts out of them.</li><li>I separate <em>describing what the code does</em> from <em>judging what it should do</em>. The error catalogue has a severity, names defects (a payment amount taken from the client, a callback that can never verify), and does not pretend the system is finished.</li><li>I can review documentation, not just write it: the rubric is written down before the review, the two drafts were produced independently, and the verdict carries a one-line reason with tags that point at the pages I checked.</li></ul>
+<div class="note note--warn"><span class="note__label">Known limitation</span><p>The two review drafts come from the same model in two separate sessions with no shared context. That is enough to show a repeatable review procedure and to catch real defects, but it is not evidence about two different vendors. A cross-vendor comparison would need the same brief sent to a second provider — the rubric and the tag format would not change.</p></div>
+
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

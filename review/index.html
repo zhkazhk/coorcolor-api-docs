@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model review — two drafts, one verdict · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html" aria-current="page">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#brief">The brief</a></li><li><a href="#scores">Scores</a></li><li><a href="#right">What each draft got right</a></li><li><a href="#defects">Defect log</a></li><li><a href="#verdict">Verdict</a></li><li><a href="#limits">What this demonstrates, and what it does not</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../api/index.html">API reference</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article>
+<p class="eyebrow">Review · 2026</p>
+<h1>Two drafts of one page, one verdict</h1>
+<p class="lede">The same brief, sent to two independent drafting sessions, produced two versions of the assign-endpoint page. This is the review: the scores, the defects each draft carries, and a verdict with one line of reasoning and support tags that point at the pages I checked.</p>
+<h2 id="brief">The brief</h2>
+<p>Both drafts received identical input: the ground truth for <code>PUT /api/admin/orders/:id/assign</code> (source range, request fields, the captured success payload, all three failure strings, the check order, the absent authorization check and the absent state guard), a required section order, an HTML tag allowlist, an escaping rule, and a length target of 350-500 words. Neither saw the rubric, the other draft, or the site's stylesheet.</p>
+<dl class="meta"><dt>Draft A</dt><dd><a href="draft-a.html">read it</a> — 466 words of prose</dd><dt>Draft B</dt><dd><a href="draft-b.html">read it</a> — 440 words of prose</dd><dt>Reference page</dt><dd><a href="../api/put-admin-orders-assign.html">the published page</a>, written separately, after the review</dd></dl>
+<h2 id="scores">Scores</h2>
+<div class="table-wrap"><table><thead><tr><th>Draft</th><th>Accuracy</th><th>Completeness</th><th>Actionability</th><th>Tone</th><th>Weighted</th></tr></thead><tbody><tr><td>Draft A</td><td><span class="score">5</span></td><td><span class="score">5</span></td><td><span class="score">4</span></td><td><span class="score">5</span></td><td><span class="score">4.8</span></td></tr><tr><td>Draft B</td><td><span class="score">4</span></td><td><span class="score">5</span></td><td><span class="score">4</span></td><td><span class="score">5</span></td><td><span class="score">4.4</span></td></tr></tbody><caption>Weights: accuracy 0.4, everything else 0.2. Accuracy defects: A 0, B 1.</caption></table></div>
+<h2 id="right">What each draft got right</h2>
+<ul><li>Both reproduced all three failure strings exactly, with the correct HTTP statuses and the correct check order (body, then order, then engineer).</li><li>Both stated that the handler performs no token check, in the plainest words either draft used — this is the fact a writer is most tempted to soften, and neither did.</li><li>Both noticed the consequence of the missing state guard: assigning a completed order reopens it. Draft B adds that the timeline then has no matching reversal entry, which is the sharper observation.</li><li>Both kept Chinese wire values untranslated inside <code>code</code>, and both proposed a concrete client-side change in the “what to do” column.</li></ul>
+<h2 id="defects">Defect log</h2>
+<div class="table-wrap"><table><thead><tr><th>Draft</th><th>Defect</th><th>Evidence</th><th>Cost</th></tr></thead><tbody><tr><td>A</td><td><code>curl</code> example uses a <code>&lt;BASE_URL&gt;</code> placeholder while the rest of the site uses an explicit base URL.</td><td>compare with <a href="../api/index.html#conventions">Conventions</a></td><td>Reader must guess the host. Not an accuracy defect.</td></tr><tr><td>B</td><td>“The handler writes five things”, followed by a list of four.</td><td>count the list in <a href="draft-b.html#b-behaviour">Draft B, Behaviour</a></td><td>A reader who counts is stopped; the count cannot be reconciled. Accuracy defect.</td></tr><tr><td>B</td><td>For 404 订单不存在, the advice is “the order may have been removed” — a guess — where the id's provenance is the checkable fact.</td><td><a href="draft-b.html#b-errors">Draft B, Errors</a></td><td>Sends the reader looking for a deletion instead of for a stale id. Costs time, not truth.</td></tr></tbody><caption>A defect has to be provable. Each row cites the place in the draft and the page it disagrees with.</caption></table></div>
+<h2 id="verdict">Verdict</h2>
+<p><span class="chip chip--ok">preferred: Draft A</span> <span class="chip">recommended for the published page</span></p>
+<p>One line of reasoning: <strong>Draft A enumerates four write effects and lists four, while Draft B claims five and lists four</strong> — the only accuracy defect either draft carries — and A is no weaker on completeness, actionability or tone, so the accuracy-first rule decides without arithmetic.</p>
+<p>Support tags, each pointing at a page checked during this review:</p>
+<ul><li><span class="tag">[API-ref]</span> <a href="../api/put-admin-orders-assign.html#behaviour">assign → Behaviour worth knowing</a> — the four write effects and the unguarded status, verified against <span class="cite">server/index.js:1041-1052</span>.</li><li><span class="tag">[API-ref]</span> <a href="../api/authentication.html#admin-routes">Authentication → Routes without authorization</a> — the “no token check” claim that both drafts make, verified against the handler body.</li><li><span class="tag">[error-catalog]</span> <a href="../errors/index.html#E-ASG-MASK">E-ASG-MASK</a> — the check-order consequence both drafts describe, re-read against the captured pair.</li></ul>
+<h2 id="limits">What this demonstrates, and what it does not</h2>
+<ul><li><strong>It demonstrates</strong> a review procedure that a second reviewer can repeat: a brief fixed in advance, independent drafts, a defect list with evidence, a decision rule applied before scoring preferences were known, and tags that resolve.</li><li><strong>It does not demonstrate</strong> that one model writes better documentation than another. Both drafts came from the same model in separate sessions. The gap between them is small, which is itself the honest finding: at this level of specificity the brief determines most of the quality, and the reviewer's job is to catch the residue.</li><li><strong>It also does not show</strong> what a different brief would produce. Drafts optimise what the brief asks for — here, completeness of the error table — and the published page was rewritten afterwards to add the state-machine table both drafts lacked.</li></ul>
+<div class="note note--info"><span class="note__label">The published page is not Draft A</span><p>Neither draft was published. <a href="../api/put-admin-orders-assign.html">The reference page</a> keeps the best sentences from both, adds the state-machine table, and replaces every hand-written example with a captured pair — which is exactly the edit a review is supposed to make possible.</p></div>
+
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

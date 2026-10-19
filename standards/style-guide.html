@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Style guide · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html" aria-current="page">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#audience">Who is reading</a></li><li><a href="#voice">Voice</a></li><li><a href="#skeleton">Page skeleton for an endpoint</a></li><li><a href="#terminology">Terminology</a></li><li><a href="#chinese">Chinese strings</a></li><li><a href="#samples">Code samples</a></li><li><a href="#links">Cross-references</a></li><li><a href="#exceptions">When to break these rules</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../api/index.html">API reference</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article>
+<p class="eyebrow">Standards</p>
+<h1>Style guide</h1>
+<p class="lede">One page, because a style guide nobody reads is worse than none. These are the rules this site is written to, and the review rubric scores drafts against them.</p>
+<h2 id="audience">Who is reading</h2>
+<p>A developer integrating against an API they did not build, under time pressure, usually with one screen of code open and one tab of documentation. They are looking for a field name, a status code, or an example they can paste. Write for the skim: the first sentence of a section has to be true and useful on its own.</p>
+<h2 id="voice">Voice</h2>
+<ul><li><strong>Second person or imperative.</strong> “Send the id you received…” not “the id will be sent…”. The reader is the actor.</li><li><strong>Present tense for behaviour, imperative for instructions.</strong> “The handler answers 404” describes; “Check the id before retrying” instructs. Do not mix them in one sentence.</li><li><strong>No adjectives that cannot be verified.</strong> Seamless, powerful, robust, simple, easy: cut. If it is easy, the example shows it.</li><li><strong>Say the consequence, not the feeling.</strong> “A retried call appends a second timeline entry” beats “retries are not handled gracefully”.</li><li><strong>Do not soften defects.</strong> “This route performs no authorization check” is the sentence. Not “authorization is handled elsewhere”.</li></ul>
+<h2 id="skeleton">Page skeleton for an endpoint</h2>
+<div class="table-wrap"><table><thead><tr><th>Section</th><th>Must contain</th><th>Must not contain</th></tr></thead><tbody><tr><td>Lede</td><td>One sentence: what the call does, for whom.</td><td>History, roadmap, apologies.</td></tr><tr><td>Metadata</td><td>Source range, auth model, and the two facts a caller would otherwise discover the hard way (idempotency, defaults).</td><td>Marketing claims.</td></tr><tr><td>Request</td><td>Parameter table — name, where, type, required, description — then one runnable example.</td><td>Every possible combination of parameters.</td></tr><tr><td>Response</td><td>One captured example and a field table for anything not self-explanatory.</td><td>Hand-typed JSON that was never executed.</td></tr><tr><td>Errors</td><td>HTTP status, exact message string, when it happens, what to do.</td><td>A promise that these are all the errors if that was not verified.</td></tr><tr><td>Behaviour worth knowing</td><td>Side effects, guards, ordering, authorization gaps, retry semantics.</td><td>Repeating the parameter table.</td></tr></tbody></table></div>
+<h2 id="terminology">Terminology</h2>
+<div class="table-wrap"><table><thead><tr><th>Use</th><th>Not</th><th>Why</th></tr></thead><tbody><tr><td><code>message</code></td><td>error text, error message string</td><td>Name the field, then describe it.</td></tr><tr><td><code>code: -1</code></td><td>error code</td><td>It is not an error code. Calling it one misleads every reader.</td></tr><tr><td>order, engineer, product, coupon</td><td>task, worker, item, voucher</td><td>Use the nouns in the payload.</td></tr><tr><td>endpoint, route</td><td>API</td><td>“The API returns…” is fine; “the API orders” is not.</td></tr><tr><td>returns / answers / responds</td><td>will return</td><td>Present tense for behaviour.</td></tr></tbody></table></div>
+<h2 id="chinese">Chinese strings</h2>
+<p>The wire values are Chinese. Reproduce them exactly, inside <code>code</code>, and do not translate them in the error tables — a reader matches what they see in the console. Translate only around them: “answers 404 订单不存在 for an unknown id”.</p>
+<p>Where a string is a poor identifier (it says nothing a program can branch on), say so once in the page that a reader will land on, and link to the catalogue entry that proposes the fix. Do not repeat the complaint on all nine pages.</p>
+<h2 id="samples">Code samples</h2>
+<ul><li><strong>Run what you publish.</strong> Every example on this site is a recorded request/response pair. If it was not executed, it is not shown.</li><li><strong>Placeholders in angle brackets and escaped</strong>: <code>&lt;ORDER_ID&gt;</code>. Volatile values (ids, timestamps, tokens, signatures) are never published as literals.</li><li><strong>Elide with an ellipsis only at the end</strong> of a payload, and never remove a field a reader needs to see.</li><li><strong>One sample per shape.</strong> A second sample is worth its space only when it shows a different shape — a failure, or a different state.</li></ul>
+<h2 id="links">Cross-references</h2>
+<ul><li>Link to the anchor, not the page: <code>authentication.html#bearer-prefix</code>.</li><li>Every internal link and anchor is checked by <code>shyzctl verify</code>, so a renamed heading fails the build instead of rotting.</li><li>Cite the source as <code>file:line-line</code> in a span, not in a sentence: the reader who does not care should be able to skip it without losing the sentence.</li><li>A claim that there is a defect must link to a catalogue entry with evidence. “This is unsafe” without a capture or a line number is an opinion.</li></ul>
+<h2 id="exceptions">When to break these rules</h2>
+<p>Two exceptions, both used on this site. A validation message that is a joined list is quoted once as a whole and then taken apart in a table, because reproducing it inline would be unreadable. A payment page whose examples come from a sandbox says so in a callout before the first sample, because provenance outranks brevity.</p>
+<p>The test is not “does this look like the guide”. It is “would a reader be misled”. If breaking a rule prevents a wrong conclusion, break it and say why in the review.</p>
+
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

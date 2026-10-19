@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authentication and errors · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#envelope">The response envelope</a></li><li><a href="#bearer-prefix">Bearer tokens</a></li><li><a href="#verification">Token verification</a></li><li><a href="#token-shapes">Two token shapes, one login</a></li><li><a href="#admin-routes">Routes without authorization</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article>
+<p class="eyebrow">Reference · guide</p>
+<h1>Authentication and errors</h1>
+<p class="lede">Two cross-cutting rules decide most integration bugs: what a caller must put in the Authorization header, and what a failure actually looks like. Both are simpler than they look and both are easy to get wrong, because the shipped client gets the first one wrong already.</p>
+<h2 id="envelope">The response envelope</h2>
+<p>Every JSON response, success or failure, has one shape:</p>
+<pre><code>{"code": 0, "data": &lt;payload&gt;}          // success, HTTP 200
+{"code": -1, "message": "&lt;Chinese text&gt;"}  // failure, HTTP 4xx or 5xx</code></pre>
+<p><code>code</code> is <strong>only ever 0 or -1</strong>. It is not an error code; it is a boolean with JSON syntax. The contract records 62 distinct <code>message</code> strings sharing that single -1, so a client that branches on <code>code</code> cannot distinguish a missing order from insufficient stock.</p>
+<div class="note note--danger"><span class="note__label">Consequence</span><p>Branch on the HTTP status, and treat <code>message</code> as display text. Do not compare the string to decide control flow: it is Chinese prose that any localisation change will break. See <a href="../errors/index.html#E-ENVELOPE">E-ENVELOPE</a> for the proposed taxonomy.</p></div>
+<h2 id="bearer-prefix">Bearer tokens</h2>
+<p>User and address routes require the header in one specific form:</p>
+<pre><code>Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...</code></pre>
+<p>The handlers test `startsWith('Bearer ')` before doing anything else (<span class="cite">server/index.js:312</span>). A bare token is not a token to this service: it produces <strong>401 请先登录</strong>, which reads like “you are not signed in” even though the caller is holding a valid credential.</p>
+<figure class="capture" data-capture="user-addresses-bare-token">
+  <figcaption><span class="capture__id">recorded pair <code>user-addresses-bare-token</code></span> <span class="chip chip--warn">HTTP 401</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/user/addresses</code></p>
+  <p class="capture__empty">No request body.</p>
+  <p class="capture__sub">Request headers</p><div class="table-wrap"><table><tbody><tr><td><code>Authorization</code></td><td><code>&lt;TOKEN&gt;</code></td></tr></tbody></table></div>
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "请先登录"
+}</code></pre>
+  
+  <p class="capture__note">The shipped mini program sends the raw token here. The server requires the <code>Bearer </code> prefix, so the request is rejected.</p>
+</figure>
+<figure class="capture" data-capture="user-addresses-bearer-token">
+  <figcaption><span class="capture__id">recorded pair <code>user-addresses-bearer-token</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/user/addresses</code></p>
+  <p class="capture__empty">No request body.</p>
+  <p class="capture__sub">Request headers</p><div class="table-wrap"><table><tbody><tr><td><code>Authorization</code></td><td><code>Bearer &lt;TOKEN&gt;</code></td></tr></tbody></table></div>
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": []
+}</code></pre>
+  
+  <p class="capture__note">Same token with the required prefix.</p>
+</figure>
+<div class="note note--warn"><span class="note__label">The shipped mini program sends the bare token</span><p><code>utils/api.js:18</code> does <code>'Authorization': wx.getStorageSync('token')</code> with no prefix, so every authenticated call from the client fails with 请先登录. The fix is one line — see <a href="../errors/index.html#E-AUTH-BEARER">E-AUTH-BEARER</a>.</p></div>
+<h2 id="verification">Token verification</h2>
+<p>Expiry and forgery are not distinguished. A route that verifies a token wraps `jwt.verify` in a try/catch and answers 登录已过期 for every failure:</p>
+<figure class="capture" data-capture="user-addresses-forged-token">
+  <figcaption><span class="capture__id">recorded pair <code>user-addresses-forged-token</code></span> <span class="chip chip--warn">HTTP 401</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/user/addresses</code></p>
+  <p class="capture__empty">No request body.</p>
+  <p class="capture__sub">Request headers</p><div class="table-wrap"><table><tbody><tr><td><code>Authorization</code></td><td><code>Bearer eyJhbGciOiJIUzI1NiJ9.eyJwaG9uZSI6IjEzOTAwMDAwMDAyIn0.invalid-signature</code></td></tr></tbody></table></div>
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "登录已过期"
+}</code></pre>
+  
+  <p class="capture__note">Well-formed JWT with a bad signature. The handler catches the verify error and reports it as an expired session.</p>
+</figure>
+<p>The global error middleware does distinguish <code>JsonWebTokenError</code> from <code>TokenExpiredError</code> (<span class="cite">server/index.js:1397-1403</span>), but it never runs for these routes because the handler catches the error first. A client cannot tell “refresh me” from “you were never authenticated”.</p>
+<h2 id="token-shapes">Two token shapes, one login</h2>
+<p>There is one sign-in endpoint and it issues an administrator token. Its payload is <code>{id, username}</code>. User routes read <code>decoded.phone</code>, which an administrator token does not contain.</p>
+<figure class="capture" data-capture="login-ok">
+  <figcaption><span class="capture__id">recorded pair <code>login-ok</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/login</code></p>
+  <pre><code>{
+  "username": "admin",
+  "password": "admin123"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "token": "&lt;TOKEN&gt;",
+    "username": "admin"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Correct administrator credentials. The token is a 24 h HS256 JWT.</p>
+</figure>
+<p>The result is a silent empty account rather than a rejection: the verify step succeeds, the filter matches no rows, and the caller receives HTTP 200 with an empty list.</p>
+<div class="note note--danger"><span class="note__label">Read an empty list as a symptom</span><p>An authenticated user route that returns <code>[]</code> may mean the token in hand is an administrator token. <a href="../errors/index.html#E-AUTH-ADMIN-TOKEN">E-AUTH-ADMIN-TOKEN</a> records the capture and the suggested fix (a user-scoped login plus a token audience claim).</p></div>
+<h2 id="admin-routes">Routes without authorization</h2>
+<p>Most <code>/api/admin/*</code> routes perform no token check at all. The contract's auth column records this per route, and it is worth stating without a hedge: an unauthenticated caller can read the customer list, change order state, approve reviews, and delete products.</p>
+<figure class="capture" data-capture="admin-reviews-pending">
+  <figcaption><span class="capture__id">recorded pair <code>admin-reviews-pending</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>GET /api/admin/reviews/pending</code></p>
+  <p class="capture__empty">No request body.</p>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": [
+    {
+      "id": "review003",
+      "productId": "product027",
+      "orderId": "order003",
+      "userId": "user003",
+      "userName": "王**",
+      "userPhone": "137****9012",
+      "content": "彩色打印效果很好，推荐购买！",
+      "images": [],
+      "status": "pending",
+      "created_at": "&lt;ISO-8601&gt;"
+    }
+  ]
+}</code></pre>
+  
+  <p class="capture__note">The mounted path. Note that the pending queue requires no token either.</p>
+</figure>
+<p>The documentation does not paper over this. Each affected page says so in its own Behaviour section, so an integrator reading one page cannot miss it, and the inventory marks the routes. Fixing it is an application change, not a documentation one; until it ships, treat the network boundary as the only access control.</p>
+
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

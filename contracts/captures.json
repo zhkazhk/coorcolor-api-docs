@@ -1,0 +1,2238 @@
+{
+  "capture_version": 1,
+  "recorded_against": {
+    "core": "http://127.0.0.1:3000",
+    "pay": "http://127.0.0.1:3101",
+    "pay_note": "stubbed outbound WeChat calls, dummy merchant key"
+  },
+  "cases": [
+    {
+      "id": "login-ok",
+      "group": "auth",
+      "note": "Correct administrator credentials. The token is a 24 h HS256 JWT.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/login",
+        "headers": {},
+        "body": {
+          "username": "admin",
+          "password": "admin123"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "token": "<TOKEN>",
+            "username": "admin"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "login-bad-password",
+      "group": "auth",
+      "note": "Existing account, wrong password.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/login",
+        "headers": {},
+        "body": {
+          "username": "admin",
+          "password": "wrong-password"
+        }
+      },
+      "response": {
+        "status": 401,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "密码错误"
+        }
+      },
+      "expected_status": 401,
+      "status_matches": true
+    },
+    {
+      "id": "login-unknown-user",
+      "group": "auth",
+      "note": "No such account. Returns 401 as well, so the client cannot tell the two apart.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/login",
+        "headers": {},
+        "body": {
+          "username": "nobody",
+          "password": "admin123"
+        }
+      },
+      "response": {
+        "status": 401,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "用户不存在"
+        }
+      },
+      "expected_status": 401,
+      "status_matches": true
+    },
+    {
+      "id": "user-info-anonymous",
+      "group": "auth",
+      "note": "Soft auth: with no Authorization header the endpoint still answers 200 with a guest profile.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/user/info",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "nickname": "用户",
+            "phone": ""
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "user-addresses-bare-token",
+      "group": "auth",
+      "note": "The shipped mini program sends the raw token here. The server requires the `Bearer ` prefix, so the request is rejected.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/user/addresses",
+        "headers": {
+          "Authorization": "<TOKEN>"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "请先登录"
+        }
+      },
+      "expected_status": 401,
+      "status_matches": true
+    },
+    {
+      "id": "user-addresses-bearer-token",
+      "group": "auth",
+      "note": "Same token with the required prefix.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/user/addresses",
+        "headers": {
+          "Authorization": "Bearer <TOKEN>"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": []
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "user-addresses-forged-token",
+      "group": "auth",
+      "note": "Well-formed JWT with a bad signature. The handler catches the verify error and reports it as an expired session.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/user/addresses",
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJwaG9uZSI6IjEzOTAwMDAwMDAyIn0.invalid-signature"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "登录已过期"
+        }
+      },
+      "expected_status": 401,
+      "status_matches": true
+    },
+    {
+      "id": "send-code-ok",
+      "group": "sms",
+      "note": "Any 11-character string passes validation; no SMS is actually sent.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/user/send-code",
+        "headers": {},
+        "body": {
+          "phone": "13900000001"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "message": "验证码已发送"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "send-code-bad-phone",
+      "group": "sms",
+      "note": "Length is the only check here and it runs before the format check.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/user/send-code",
+        "headers": {},
+        "body": {
+          "phone": "1390000"
+        }
+      },
+      "response": {
+        "status": 400,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "请输入正确的手机号"
+        }
+      },
+      "expected_status": 400,
+      "status_matches": true
+    },
+    {
+      "id": "send-code-non-numeric",
+      "group": "sms",
+      "note": "Eleven non-digit characters are accepted. `phone.length !== 11` is the whole validation, so this defect is reproducible.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/user/send-code",
+        "headers": {},
+        "body": {
+          "phone": "abcdefghijk"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "message": "验证码已发送"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "bind-phone-wrong-code",
+      "group": "sms",
+      "note": "A code was requested for this number in the previous case, so the failure is the value, not the request.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/user/bind-phone",
+        "headers": {},
+        "body": {
+          "phone": "13900000001",
+          "code": "000000"
+        }
+      },
+      "response": {
+        "status": 400,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "验证码错误"
+        }
+      },
+      "expected_status": 400,
+      "status_matches": true
+    },
+    {
+      "id": "products-list",
+      "group": "products",
+      "note": "Every active product, newest first.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/products",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": [
+            {
+              "id": "product001",
+              "name": "打印机上门维修服务",
+              "category": "repair",
+              "price": 99,
+              "originalPrice": 150,
+              "description": "专业工程师上门检测维修，包含常规故障诊断和修复",
+              "features": [
+                "专业工程师",
+                "2小时响应",
+                "正品配件",
+                "3个月质保"
+              ],
+              "image": "🔧",
+              "stock": 999,
+              "sales": 1256,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product002",
+              "name": "复印机深度保养",
+              "category": "repair",
+              "price": 199,
+              "originalPrice": 299,
+              "description": "复印机全面清洁保养，提升打印质量和设备寿命",
+              "features": [
+                "深度清洁",
+                "部件检查",
+                "性能优化",
+                "延长寿命"
+              ],
+              "image": "✨",
+              "stock": 999,
+              "sales": 589,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product003",
+              "name": "网络打印故障排查",
+              "category": "repair",
+              "price": 149,
+              "originalPrice": 200,
+              "description": "解决打印机网络连接问题，确保正常打印",
+              "features": [
+                "网络诊断",
+                "驱动修复",
+                "共享设置",
+                "远程协助"
+              ],
+              "image": "🔗",
+              "stock": 999,
+              "sales": 423,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product004",
+              "name": "耗材更换服务",
+              "category": "repair",
+              "price": 49,
+              "originalPrice": 80,
+              "description": "专业人员上门更换墨盒、硒鼓等耗材",
+              "features": [
+                "正品耗材",
+                "专业安装",
+                "旧件回收",
+                "现场测试"
+              ],
+              "image": "🖨️",
+              "stock": 999,
+              "sales": 2156,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product005",
+              "name": "设备故障检测",
+              "category": "repair",
+              "price": 39,
+              "originalPrice": 60,
+              "description": "专业检测设备故障原因，提供维修方案",
+              "features": [
+                "全面检测",
+                "故障报告",
+                "维修建议",
+                "透明报价"
+              ],
+              "image": "🔍",
+              "stock": 999,
+              "sales": 876,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product006",
+              "name": "佳能IR-ADV 4525租赁",
+              "category": "rent",
+              "price": 899,
+              "originalPrice": 1200,
+              "description": "佳能高速数码复合机，适合中型企业使用",
+              "features": [
+                "免押金",
+                "含耗材",
+                "免费维修",
+                "按月付费"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 50,
+              "sales": 156,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product007",
+              "name": "惠普M405dn租赁",
+              "category": "rent",
+              "price": 1299,
+              "originalPrice": 1499,
+              "description": "惠普黑白激光打印机，适合小型办公室",
+              "features": [
+                "免押金",
+                "高速打印",
+                "自动双面",
+                "三年质保"
+              ],
+              "image": "🖨️",
+              "stock": 100,
+              "sales": 342,
+              "created_at": "<ISO-8601>",
+              "updated_at": "<ISO-8601>",
+              "status": "active"
+            },
+            {
+              "id": "product008",
+              "name": "科美C226i租赁",
+              "category": "rent",
+              "price": 1299,
+              "originalPrice": 1800,
+              "description": "科美彩色数码复合机，支持多种功能",
+              "features": [
+                "彩色打印",
+                "扫描复印",
+                "双面输出",
+                "网络共享"
+              ],
+              "image": "🌈",
+              "stock": 30,
+              "sales": 89,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product009",
+              "name": "施乐S2110租赁",
+              "category": "rent",
+              "price": 599,
+              "originalPrice": 800,
+              "description": "施乐经济型复印机，性价比高",
+              "features": [
+                "稳定可靠",
+                "低耗材成本",
+                "操作简单",
+                "快速服务"
+              ],
+              "image": "📋",
+              "stock": 80,
+              "sales": 234,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product010",
+              "name": "联想M7206租赁",
+              "category": "rent",
+              "price": 199,
+              "originalPrice": 280,
+              "description": "联想多功能一体机，打印复印扫描三合一",
+              "features": [
+                "小巧便携",
+                "功能齐全",
+                "节能低噪",
+                "易维护"
+              ],
+              "image": "💻",
+              "stock": 150,
+              "sales": 567,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product011",
+              "name": "原装佳能墨盒PG-845",
+              "category": "supplies",
+              "price": 129,
+              "originalPrice": 180,
+              "description": "佳能原装墨盒，适用于多款佳能打印机",
+              "features": [
+                "原装正品",
+                "打印清晰",
+                "容量充足",
+                "质量保证"
+              ],
+              "image": "🖨️",
+              "stock": 500,
+              "sales": 3421,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product012",
+              "name": "惠普CF228A硒鼓",
+              "category": "supplies",
+              "price": 289,
+              "originalPrice": 380,
+              "description": "惠普原装硒鼓，打印量约3000页",
+              "features": [
+                "原装正品",
+                "高打印量",
+                "清晰锐利",
+                "稳定可靠"
+              ],
+              "image": "🖨️",
+              "stock": 300,
+              "sales": 1876,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product013",
+              "name": "科美TN323粉盒",
+              "category": "supplies",
+              "price": 359,
+              "originalPrice": 480,
+              "description": "科美原装粉盒，适用于C226/C266系列",
+              "features": [
+                "原装正品",
+                "色彩鲜艳",
+                "大容量",
+                "持久耐用"
+              ],
+              "image": "🌈",
+              "stock": 200,
+              "sales": 892,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product014",
+              "name": "施乐CT202873碳粉",
+              "category": "supplies",
+              "price": 299,
+              "originalPrice": 400,
+              "description": "施乐原装碳粉，适用于S2110系列",
+              "features": [
+                "原装正品",
+                "均匀细腻",
+                "定影牢固",
+                "环保配方"
+              ],
+              "image": "⚫",
+              "stock": 250,
+              "sales": 1123,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product015",
+              "name": "通用型打印纸A4",
+              "category": "supplies",
+              "price": 35,
+              "originalPrice": 50,
+              "description": "高品质A4打印纸，80g/m²，500张/包",
+              "features": [
+                "优质纸张",
+                "不易卡纸",
+                "打印清晰",
+                "性价比高"
+              ],
+              "image": "📄",
+              "stock": 1000,
+              "sales": 5678,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product016",
+              "name": "佳能MF4712全新机",
+              "category": "sale",
+              "price": 1299,
+              "originalPrice": 1699,
+              "description": "佳能黑白激光一体机，打印复印扫描传真四合一",
+              "features": [
+                "全新正品",
+                "全国联保",
+                "快速打印",
+                "操作简便"
+              ],
+              "image": "🖨️",
+              "stock": 100,
+              "sales": 456,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product017",
+              "name": "惠普M281fdw全新机",
+              "category": "sale",
+              "price": 2499,
+              "originalPrice": 3299,
+              "description": "惠普彩色激光一体机，支持无线打印",
+              "features": [
+                "彩色打印",
+                "无线连接",
+                "自动双面",
+                "高速输出"
+              ],
+              "image": "🌈",
+              "stock": 50,
+              "sales": 234,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product018",
+              "name": "科美C226i全新机",
+              "category": "sale",
+              "price": 8999,
+              "originalPrice": 12000,
+              "description": "科美彩色数码复合机，适合企业级使用",
+              "features": [
+                "高速彩色",
+                "大容量纸盒",
+                "网络扫描",
+                "专业品质"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 20,
+              "sales": 67,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product019",
+              "name": "施乐S2110二手机",
+              "category": "sale",
+              "price": 1899,
+              "originalPrice": 3500,
+              "description": "施乐复印机二手翻新机，性能稳定",
+              "features": [
+                "品质翻新",
+                "半年质保",
+                "价格实惠",
+                "性能可靠"
+              ],
+              "image": "📋",
+              "stock": 30,
+              "sales": 145,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product020",
+              "name": "联想LJ2605D全新机",
+              "category": "sale",
+              "price": 799,
+              "originalPrice": 1099,
+              "description": "联想黑白激光打印机，自动双面打印",
+              "features": [
+                "小巧轻便",
+                "自动双面",
+                "快速打印",
+                "节能环保"
+              ],
+              "image": "💻",
+              "stock": 150,
+              "sales": 789,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product021",
+              "name": "佳能IR 2925",
+              "category": "bw-copier",
+              "price": 399,
+              "originalPrice": 600,
+              "description": "佳能黑白数码复合机，A3幅面，25页/分钟",
+              "features": [
+                "高速打印",
+                "双面输出",
+                "网络共享",
+                "大容量纸盒"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 39,
+              "sales": 121,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product022",
+              "name": "佳能IR 2930",
+              "category": "bw-copier",
+              "price": 499,
+              "originalPrice": 750,
+              "description": "佳能黑白数码复合机，A3幅面，30页/分钟",
+              "features": [
+                "高速打印",
+                "双面输出",
+                "网络扫描",
+                "自动进稿"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 34,
+              "sales": 90,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product023",
+              "name": "佳能DX 4935",
+              "category": "bw-copier",
+              "price": 699,
+              "originalPrice": 1000,
+              "description": "佳能新一代黑白数码复合机，A3幅面，35页/分钟",
+              "features": [
+                "智能操作",
+                "高速扫描",
+                "大容量内存",
+                "节能环保"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 25,
+              "sales": 67,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product024",
+              "name": "佳能IR 2520",
+              "category": "bw-copier",
+              "price": 299,
+              "originalPrice": 450,
+              "description": "佳能经典款黑白复印机，A3幅面，20页/分钟",
+              "features": [
+                "稳定可靠",
+                "操作简单",
+                "经济实惠",
+                "耐用持久"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 50,
+              "sales": 234,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product025",
+              "name": "佳能IR 2525",
+              "category": "bw-copier",
+              "price": 349,
+              "originalPrice": 520,
+              "description": "佳能黑白数码复合机，A3幅面，25页/分钟",
+              "features": [
+                "高效输出",
+                "双面复印",
+                "网络打印",
+                "多功能"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 45,
+              "sales": 178,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product026",
+              "name": "佳能IR 2530",
+              "category": "bw-copier",
+              "price": 399,
+              "originalPrice": 580,
+              "description": "佳能黑白数码复合机，A3幅面，30页/分钟",
+              "features": [
+                "高速高效",
+                "自动双面",
+                "扫描至邮箱",
+                "专业品质"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 38,
+              "sales": 156,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product027",
+              "name": "佳能C3322L",
+              "category": "color-copier",
+              "price": 399,
+              "originalPrice": 800,
+              "description": "佳能彩色数码复合机，A3彩色复印机，月租价格",
+              "features": [
+                "彩色打印",
+                "扫描复印",
+                "双面输出",
+                "网络共享"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 38,
+              "sales": 122,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product028",
+              "name": "佳能C3926",
+              "category": "color-copier",
+              "price": 499,
+              "originalPrice": 1000,
+              "description": "佳能彩色数码复合机，高速彩色输出",
+              "features": [
+                "高速彩色",
+                "大容量纸盒",
+                "智能操作",
+                "专业品质"
+              ],
+              "image": "/images/c3926图片.jpg",
+              "stock": 30,
+              "sales": 89,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product029",
+              "name": "佳能C3935",
+              "category": "color-copier",
+              "price": 599,
+              "originalPrice": 1200,
+              "description": "佳能高端彩色数码复合机，35页/分钟",
+              "features": [
+                "高速高效",
+                "双面扫描",
+                "网络传真",
+                "安全打印"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 25,
+              "sales": 67,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product030",
+              "name": "柯美KM C360i",
+              "category": "color-copier",
+              "price": 399,
+              "originalPrice": 550,
+              "description": "柯美彩色数码复合机，A3彩色复印机",
+              "features": [
+                "彩色打印",
+                "扫描复印",
+                "双面输出",
+                "网络共享"
+              ],
+              "image": "🖨️",
+              "stock": 35,
+              "sales": 98,
+              "created_at": "<ISO-8601>",
+              "updated_at": "<ISO-8601>",
+              "status": "active"
+            },
+            {
+              "id": "product031",
+              "name": "柯美KM C368",
+              "category": "color-copier",
+              "price": 449,
+              "originalPrice": 900,
+              "description": "柯美彩色数码复合机，高性能办公",
+              "features": [
+                "高速打印",
+                "彩色扫描",
+                "双面复印",
+                "节能设计"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 32,
+              "sales": 76,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product032",
+              "name": "柯美KM C361i",
+              "category": "color-copier",
+              "price": 549,
+              "originalPrice": 1100,
+              "description": "柯美新一代彩色数码复合机",
+              "features": [
+                "智能触控",
+                "高速扫描",
+                "云打印",
+                "环保认证"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 28,
+              "sales": 54,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product033",
+              "name": "施乐C3570",
+              "category": "color-copier",
+              "price": 399,
+              "originalPrice": 820,
+              "description": "施乐彩色数码复合机，稳定可靠",
+              "features": [
+                "彩色打印",
+                "扫描复印",
+                "双面输出",
+                "网络共享"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 38,
+              "sales": 102,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product034",
+              "name": "施乐C3373",
+              "category": "color-copier",
+              "price": 449,
+              "originalPrice": 920,
+              "description": "施乐彩色数码复合机，高效办公",
+              "features": [
+                "高速输出",
+                "彩色扫描",
+                "双面复印",
+                "低成本"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 34,
+              "sales": 87,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product035",
+              "name": "施乐C3571",
+              "category": "color-copier",
+              "price": 549,
+              "originalPrice": 1050,
+              "description": "施乐高端彩色数码复合机",
+              "features": [
+                "智能操作",
+                "高速扫描",
+                "安全打印",
+                "移动打印"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 26,
+              "sales": 61,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product036",
+              "name": "惠普HP 7740",
+              "category": "commercial-inkjet",
+              "price": 199,
+              "originalPrice": 350,
+              "description": "惠普商喷一体机，A3彩色打印",
+              "features": [
+                "A3彩色",
+                "无线打印",
+                "扫描复印",
+                "低成本"
+              ],
+              "image": "🖨️",
+              "stock": 60,
+              "sales": 234,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product037",
+              "name": "惠普HP 8730",
+              "category": "commercial-inkjet",
+              "price": 249,
+              "originalPrice": 450,
+              "description": "惠普高端商喷一体机，专业品质",
+              "features": [
+                "高速打印",
+                "双面输出",
+                "网络共享",
+                "大容量墨盒"
+              ],
+              "image": "🖨️",
+              "stock": 50,
+              "sales": 178,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product038",
+              "name": "惠普HP 7858",
+              "category": "commercial-inkjet",
+              "price": 179,
+              "originalPrice": 320,
+              "description": "惠普商喷一体机，经济实惠",
+              "features": [
+                "彩色打印",
+                "扫描复印",
+                "无线连接",
+                "高性价比"
+              ],
+              "image": "🖨️",
+              "stock": 70,
+              "sales": 312,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product039",
+              "name": "佳能G3880",
+              "category": "commercial-inkjet",
+              "price": 169,
+              "originalPrice": 300,
+              "description": "佳能商喷一体机，加墨式设计",
+              "features": [
+                "加墨式",
+                "低成本打印",
+                "扫描复印",
+                "无线连接"
+              ],
+              "image": "🖨️",
+              "stock": 80,
+              "sales": 345,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product040",
+              "name": "佳能G4880",
+              "category": "commercial-inkjet",
+              "price": 199,
+              "originalPrice": 360,
+              "description": "佳能商喷一体机，支持传真",
+              "features": [
+                "四合一体机",
+                "传真功能",
+                "无线打印",
+                "大容量墨水"
+              ],
+              "image": "🖨️",
+              "stock": 65,
+              "sales": 267,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product041",
+              "name": "佳能G5880",
+              "category": "commercial-inkjet",
+              "price": 299,
+              "originalPrice": 500,
+              "description": "佳能高端商喷一体机，A3打印",
+              "features": [
+                "A3打印",
+                "六色墨水",
+                "专业照片",
+                "无线连接"
+              ],
+              "image": "🖨️",
+              "stock": 40,
+              "sales": 145,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product042",
+              "name": "惠普M405dn",
+              "category": "bw-printer",
+              "price": 199,
+              "originalPrice": 350,
+              "description": "惠普黑白激光打印机，高速稳定",
+              "features": [
+                "高速打印",
+                "自动双面",
+                "网络连接",
+                "大容量纸盒"
+              ],
+              "image": "/images/惠普 M405dn图片.jpg",
+              "stock": 75,
+              "sales": 423,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product043",
+              "name": "惠普M428fdw",
+              "category": "bw-printer",
+              "price": 249,
+              "originalPrice": 450,
+              "description": "惠普黑白激光一体机，四合一",
+              "features": [
+                "四合一体机",
+                "双面打印",
+                "无线连接",
+                "自动进稿"
+              ],
+              "image": "🖨️",
+              "stock": 55,
+              "sales": 287,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product044",
+              "name": "惠普M437fdw",
+              "category": "bw-printer",
+              "price": 349,
+              "originalPrice": 600,
+              "description": "惠普黑白激光一体机，A3打印",
+              "features": [
+                "A3打印",
+                "扫描复印",
+                "网络共享",
+                "专业品质"
+              ],
+              "image": "🖨️",
+              "stock": 40,
+              "sales": 178,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product045",
+              "name": "佳能MF4712",
+              "category": "bw-printer",
+              "price": 149,
+              "originalPrice": 280,
+              "description": "佳能黑白激光一体机，经济实惠",
+              "features": [
+                "三合一",
+                "快速打印",
+                "操作简单",
+                "高性价比"
+              ],
+              "image": "🖨️",
+              "stock": 90,
+              "sales": 567,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product046",
+              "name": "佳能MF4452",
+              "category": "bw-printer",
+              "price": 179,
+              "originalPrice": 320,
+              "description": "佳能黑白激光一体机，商务办公",
+              "features": [
+                "四合一体机",
+                "传真功能",
+                "高速打印",
+                "稳定可靠"
+              ],
+              "image": "🖨️",
+              "stock": 70,
+              "sales": 412,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product047",
+              "name": "佳能MF4450",
+              "category": "bw-printer",
+              "price": 169,
+              "originalPrice": 300,
+              "description": "佳能黑白激光一体机，经典款",
+              "features": [
+                "三合一",
+                "快速扫描",
+                "网络打印",
+                "耐用持久"
+              ],
+              "image": "🖨️",
+              "stock": 75,
+              "sales": 445,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            }
+          ]
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "products-by-category",
+      "group": "products",
+      "note": "`category=rent` narrows the list; `all` (or omitting it) does not filter at all.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/products?{\"category\": \"rent\"}",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": [
+            {
+              "id": "product006",
+              "name": "佳能IR-ADV 4525租赁",
+              "category": "rent",
+              "price": 899,
+              "originalPrice": 1200,
+              "description": "佳能高速数码复合机，适合中型企业使用",
+              "features": [
+                "免押金",
+                "含耗材",
+                "免费维修",
+                "按月付费"
+              ],
+              "image": "/images/c3322l图片.jpg",
+              "stock": 50,
+              "sales": 156,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product007",
+              "name": "惠普M405dn租赁",
+              "category": "rent",
+              "price": 1299,
+              "originalPrice": 1499,
+              "description": "惠普黑白激光打印机，适合小型办公室",
+              "features": [
+                "免押金",
+                "高速打印",
+                "自动双面",
+                "三年质保"
+              ],
+              "image": "🖨️",
+              "stock": 100,
+              "sales": 342,
+              "created_at": "<ISO-8601>",
+              "updated_at": "<ISO-8601>",
+              "status": "active"
+            },
+            {
+              "id": "product008",
+              "name": "科美C226i租赁",
+              "category": "rent",
+              "price": 1299,
+              "originalPrice": 1800,
+              "description": "科美彩色数码复合机，支持多种功能",
+              "features": [
+                "彩色打印",
+                "扫描复印",
+                "双面输出",
+                "网络共享"
+              ],
+              "image": "🌈",
+              "stock": 30,
+              "sales": 89,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product009",
+              "name": "施乐S2110租赁",
+              "category": "rent",
+              "price": 599,
+              "originalPrice": 800,
+              "description": "施乐经济型复印机，性价比高",
+              "features": [
+                "稳定可靠",
+                "低耗材成本",
+                "操作简单",
+                "快速服务"
+              ],
+              "image": "📋",
+              "stock": 80,
+              "sales": 234,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            },
+            {
+              "id": "product010",
+              "name": "联想M7206租赁",
+              "category": "rent",
+              "price": 199,
+              "originalPrice": 280,
+              "description": "联想多功能一体机，打印复印扫描三合一",
+              "features": [
+                "小巧便携",
+                "功能齐全",
+                "节能低噪",
+                "易维护"
+              ],
+              "image": "💻",
+              "stock": 150,
+              "sales": 567,
+              "created_at": "<ISO-8601>",
+              "status": "active",
+              "updated_at": "<ISO-8601>"
+            }
+          ]
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "products-detail",
+      "group": "products",
+      "note": "Seeded product. `price` is CNY per unit, `stock` is units available.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/products/product001",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "product001",
+            "name": "打印机上门维修服务",
+            "category": "repair",
+            "price": 99,
+            "originalPrice": 150,
+            "description": "专业工程师上门检测维修，包含常规故障诊断和修复",
+            "features": [
+              "专业工程师",
+              "2小时响应",
+              "正品配件",
+              "3个月质保"
+            ],
+            "image": "🔧",
+            "stock": 999,
+            "sales": 1256,
+            "created_at": "<ISO-8601>",
+            "status": "active",
+            "updated_at": "<ISO-8601>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "products-detail-404",
+      "group": "products",
+      "note": "Unknown id. Status is 404 but `code` is still only -1.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/products/product999",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "产品不存在"
+        }
+      },
+      "expected_status": 404,
+      "status_matches": true
+    },
+    {
+      "id": "orders-create-ok",
+      "group": "orders",
+      "note": "Only the two identifiers come back. Everything else is echoed by GET /api/orders/:id.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/orders",
+        "headers": {},
+        "body": {
+          "serviceType": "repair",
+          "brand": "Canon",
+          "model": "iRC3322L",
+          "problemDesc": "Paper jam in tray 2, red light flashing",
+          "appointmentDate": "2026-11-03",
+          "appointmentTime": "14:00",
+          "contactName": "Liu Yang",
+          "contactPhone": "13900000002",
+          "serviceAddress": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+          "urgency": "urgent"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID>",
+            "order_no": "<ORDER_NO>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "orders-create-validation",
+      "group": "orders",
+      "note": "All eight field checks run before the response, and the reasons are joined into one string.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/orders",
+        "headers": {},
+        "body": {
+          "serviceType": "",
+          "brand": "Canon",
+          "problemDesc": "",
+          "appointmentDate": "",
+          "appointmentTime": "",
+          "contactName": "L",
+          "contactPhone": "1390000",
+          "serviceAddress": "Here"
+        }
+      },
+      "response": {
+        "status": 400,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "服务类型不能为空；问题描述不能为空；预约日期不能为空；预约时间不能为空；请输入正确的联系人姓名；请输入正确的手机号；请输入详细的服务地址"
+        }
+      },
+      "expected_status": 400,
+      "status_matches": true
+    },
+    {
+      "id": "orders-detail-ok",
+      "group": "orders",
+      "note": "The order created above, with `engineer_*` fields present only after assignment.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/orders/<ORDER_ID>",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID>",
+            "order_no": "<ORDER_NO>",
+            "service_type": "repair",
+            "brand": "Canon",
+            "model": "iRC3322L",
+            "problem_desc": "Paper jam in tray 2, red light flashing",
+            "urgency": "urgent",
+            "photos": [],
+            "position": null,
+            "appointment_date": "2026-11-03",
+            "appointment_time": "14:00",
+            "contact_name": "Liu Yang",
+            "contact_phone": "13900000002",
+            "service_address": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+            "remark": "",
+            "status": "pending",
+            "created_at": "<ISO-8601>",
+            "updated_at": "<ISO-8601>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "orders-detail-404",
+      "group": "orders",
+      "note": "Unknown order id.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/orders/1700000000000",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "订单不存在"
+        }
+      },
+      "expected_status": 404,
+      "status_matches": true
+    },
+    {
+      "id": "orders-cancel-ok",
+      "group": "orders",
+      "note": "Customer cancellation. No status guard: a completed order is cancelled just as happily.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/orders/<ORDER_ID>/cancel",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": null
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "state-confirm-order",
+      "group": "state",
+      "note": "Fixture for the state-machine cases below: a fresh pending order.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/orders",
+        "headers": {},
+        "body": {
+          "serviceType": "repair",
+          "brand": "HP",
+          "problemDesc": "Drum unit replacement",
+          "appointmentDate": "2026-11-04",
+          "appointmentTime": "09:30",
+          "contactName": "Wang Fang",
+          "contactPhone": "13900000003",
+          "serviceAddress": "Floor 6, 1000 Century Avenue, Pudong, Shanghai"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID_2>",
+            "order_no": "<ORDER_NO>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "assign-ok",
+      "group": "state",
+      "note": "Assignment jumps straight to `processing` and appends a timeline entry.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_2>/assign",
+        "headers": {},
+        "body": {
+          "engineer_id": "engineer001"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID_2>",
+            "order_no": "<ORDER_NO>",
+            "service_type": "repair",
+            "brand": "HP",
+            "model": "",
+            "problem_desc": "Drum unit replacement",
+            "urgency": "normal",
+            "photos": [],
+            "position": null,
+            "appointment_date": "2026-11-04",
+            "appointment_time": "09:30",
+            "contact_name": "Wang Fang",
+            "contact_phone": "13900000003",
+            "service_address": "Floor 6, 1000 Century Avenue, Pudong, Shanghai",
+            "remark": "",
+            "status": "processing",
+            "created_at": "<ISO-8601>",
+            "updated_at": "<ISO-8601>",
+            "engineer_id": "engineer001",
+            "engineer_name": "张工程师",
+            "engineer_phone": "13800138001",
+            "timeline": [
+              {
+                "status": "processing",
+                "time": "<ISO-8601>",
+                "operator": "管理员",
+                "remark": "分配给工程师：张工程师"
+              }
+            ]
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "assign-missing-engineer",
+      "group": "state",
+      "note": "The body is checked before the order is even looked up.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_2>/assign",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 400,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "请选择工程师"
+        }
+      },
+      "expected_status": 400,
+      "status_matches": true
+    },
+    {
+      "id": "assign-unknown-order",
+      "group": "state",
+      "note": "Order is resolved before the engineer, so an unknown order masks an unknown engineer.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/1700000000001/assign",
+        "headers": {},
+        "body": {
+          "engineer_id": "engineer001"
+        }
+      },
+      "response": {
+        "status": 404,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "订单不存在"
+        }
+      },
+      "expected_status": 404,
+      "status_matches": true
+    },
+    {
+      "id": "assign-unknown-engineer",
+      "group": "state",
+      "note": "Same 404 message shape as an unknown order — only the text differs.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_2>/assign",
+        "headers": {},
+        "body": {
+          "engineer_id": "engineer999"
+        }
+      },
+      "response": {
+        "status": 404,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "工程师不存在"
+        }
+      },
+      "expected_status": 404,
+      "status_matches": true
+    },
+    {
+      "id": "complete-ok",
+      "group": "state",
+      "note": "The assignment above left the order in `processing`, which is the only state `complete` accepts.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_2>/complete",
+        "headers": {},
+        "body": {
+          "amount": 180,
+          "solution": "Replaced drum unit",
+          "materials": [
+            "DR-2450 drum"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID_2>",
+            "order_no": "<ORDER_NO>",
+            "service_type": "repair",
+            "brand": "HP",
+            "model": "",
+            "problem_desc": "Drum unit replacement",
+            "urgency": "normal",
+            "photos": [],
+            "position": null,
+            "appointment_date": "2026-11-04",
+            "appointment_time": "09:30",
+            "contact_name": "Wang Fang",
+            "contact_phone": "13900000003",
+            "service_address": "Floor 6, 1000 Century Avenue, Pudong, Shanghai",
+            "remark": "",
+            "status": "completed",
+            "created_at": "<ISO-8601>",
+            "updated_at": "<ISO-8601>",
+            "engineer_id": "engineer001",
+            "engineer_name": "张工程师",
+            "engineer_phone": "13800138001",
+            "timeline": [
+              {
+                "status": "processing",
+                "time": "<ISO-8601>",
+                "operator": "管理员",
+                "remark": "分配给工程师：张工程师"
+              },
+              {
+                "status": "completed",
+                "time": "<ISO-8601>",
+                "operator": "张工程师"
+              }
+            ],
+            "amount": 180,
+            "solution": "Replaced drum unit",
+            "materials": [
+              "DR-2450 drum"
+            ],
+            "service_completed_at": "<ISO-8601>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "state-pending-order",
+      "group": "state",
+      "note": "A second fixture order, left `pending`, to show the state guards rejecting the wrong transition.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/orders",
+        "headers": {},
+        "body": {
+          "serviceType": "supplies",
+          "brand": "Brother",
+          "problemDesc": "Toner cartridge low",
+          "appointmentDate": "2026-11-05",
+          "appointmentTime": "16:00",
+          "contactName": "Chen Jie",
+          "contactPhone": "13900000004",
+          "serviceAddress": "Desk 12, 55 Anshan Road, Yangpu, Shanghai"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID_3>",
+            "order_no": "<ORDER_NO>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "complete-wrong-state",
+      "group": "state",
+      "note": "`complete` only accepts `processing`; this order is still `pending`.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_3>/complete",
+        "headers": {},
+        "body": {
+          "amount": 120
+        }
+      },
+      "response": {
+        "status": 400,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "只能完成服务中的订单"
+        }
+      },
+      "expected_status": 400,
+      "status_matches": true
+    },
+    {
+      "id": "start-wrong-state",
+      "group": "state",
+      "note": "`start` only accepts `confirmed`; `pending` is rejected with its own message.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_3>/start",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 400,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "只能开始已确认的订单"
+        }
+      },
+      "expected_status": 400,
+      "status_matches": true
+    },
+    {
+      "id": "state-confirm-fourth",
+      "group": "state",
+      "note": "Third fixture order, used to show the confirm → start transition succeeding in order.",
+      "base": "core",
+      "request": {
+        "method": "POST",
+        "path": "/api/orders",
+        "headers": {},
+        "body": {
+          "serviceType": "rent",
+          "brand": "Konica Minolta",
+          "problemDesc": "Monthly maintenance visit",
+          "appointmentDate": "2026-11-06",
+          "appointmentTime": "10:00",
+          "contactName": "Zhao Lei",
+          "contactPhone": "13900000005",
+          "serviceAddress": "Floor 2, 66 Wuning Road, Putuo, Shanghai"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID_4>",
+            "order_no": "<ORDER_NO>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "confirm-ok",
+      "group": "state",
+      "note": "`pending` → `confirmed`. This is the transition `start` requires.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_4>/confirm",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID_4>",
+            "order_no": "<ORDER_NO>",
+            "service_type": "rent",
+            "brand": "Konica Minolta",
+            "model": "",
+            "problem_desc": "Monthly maintenance visit",
+            "urgency": "normal",
+            "photos": [],
+            "position": null,
+            "appointment_date": "2026-11-06",
+            "appointment_time": "10:00",
+            "contact_name": "Zhao Lei",
+            "contact_phone": "13900000005",
+            "service_address": "Floor 2, 66 Wuning Road, Putuo, Shanghai",
+            "remark": "",
+            "status": "confirmed",
+            "created_at": "<ISO-8601>",
+            "updated_at": "<ISO-8601>",
+            "timeline": [
+              {
+                "status": "confirmed",
+                "time": "<ISO-8601>",
+                "operator": "管理员"
+              }
+            ]
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "start-ok",
+      "group": "state",
+      "note": "`confirmed` → `processing`, with `service_started_at` stamped.",
+      "base": "core",
+      "request": {
+        "method": "PUT",
+        "path": "/api/admin/orders/<ORDER_ID_4>/start",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "id": "<ORDER_ID_4>",
+            "order_no": "<ORDER_NO>",
+            "service_type": "rent",
+            "brand": "Konica Minolta",
+            "model": "",
+            "problem_desc": "Monthly maintenance visit",
+            "urgency": "normal",
+            "photos": [],
+            "position": null,
+            "appointment_date": "2026-11-06",
+            "appointment_time": "10:00",
+            "contact_name": "Zhao Lei",
+            "contact_phone": "13900000005",
+            "service_address": "Floor 2, 66 Wuning Road, Putuo, Shanghai",
+            "remark": "",
+            "status": "processing",
+            "created_at": "<ISO-8601>",
+            "updated_at": "<ISO-8601>",
+            "timeline": [
+              {
+                "status": "confirmed",
+                "time": "<ISO-8601>",
+                "operator": "管理员"
+              },
+              {
+                "status": "processing",
+                "time": "<ISO-8601>",
+                "operator": "工程师"
+              }
+            ],
+            "service_started_at": "<ISO-8601>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "route-not-found",
+      "group": "routing",
+      "note": "The reviews listing lives under /api/admin/reviews/pending. The unmounted path falls through to the catch-all handler.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/reviews/pending",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "评价不存在"
+        }
+      },
+      "expected_status": 404,
+      "status_matches": true
+    },
+    {
+      "id": "admin-reviews-pending",
+      "group": "routing",
+      "note": "The mounted path. Note that the pending queue requires no token either.",
+      "base": "core",
+      "request": {
+        "method": "GET",
+        "path": "/api/admin/reviews/pending",
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": [
+            {
+              "id": "review003",
+              "productId": "product027",
+              "orderId": "order003",
+              "userId": "user003",
+              "userName": "王**",
+              "userPhone": "137****9012",
+              "content": "彩色打印效果很好，推荐购买！",
+              "images": [],
+              "status": "pending",
+              "created_at": "<ISO-8601>"
+            }
+          ]
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "payment-create-ok",
+      "group": "payment",
+      "note": "Sandbox only: the outbound unified-order call is stubbed, so `package` holds a fixed prepay id and the signature is computed with a dummy merchant key.",
+      "base": "pay",
+      "request": {
+        "method": "POST",
+        "path": "/api/wxpay/create-order",
+        "headers": {},
+        "body": {
+          "items": [
+            {
+              "productId": "product006",
+              "name": "Canon IR-ADV 4525 rental",
+              "quantity": 1,
+              "price": 899
+            }
+          ],
+          "totalAmount": 899,
+          "contactName": "Liu Yang",
+          "contactPhone": "13900000002",
+          "serviceAddress": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+          "openid": "o0000000000000000000000000000000"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "orderId": "<EPOCH_MS>",
+            "orderNo": "<PAY_ORDER_NO>",
+            "timeStamp": "<UNIX_SECONDS>",
+            "nonceStr": "<NONCE_STR>",
+            "package": "prepay_id=<PREPAY_ID>",
+            "signType": "MD5",
+            "paySign": "<PAY_SIGN>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "payment-create-missing-openid",
+      "group": "payment",
+      "note": "`items`, `totalAmount` and `openid` are all required, and one message covers all three.",
+      "base": "pay",
+      "request": {
+        "method": "POST",
+        "path": "/api/wxpay/create-order",
+        "headers": {},
+        "body": {
+          "items": [],
+          "totalAmount": 0
+        }
+      },
+      "response": {
+        "status": 400,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": -1,
+          "message": "参数不完整"
+        }
+      },
+      "expected_status": 400,
+      "status_matches": true
+    },
+    {
+      "id": "payment-create-tiny-amount",
+      "group": "payment",
+      "note": "Twelve rentals priced at 899 each, charged one fen. The amount comes from the client and is never recomputed from the product records.",
+      "base": "pay",
+      "request": {
+        "method": "POST",
+        "path": "/api/wxpay/create-order",
+        "headers": {},
+        "body": {
+          "items": [
+            {
+              "productId": "product006",
+              "name": "Canon IR-ADV 4525 rental",
+              "quantity": 12,
+              "price": 899
+            }
+          ],
+          "totalAmount": 0.01,
+          "contactName": "Liu Yang",
+          "contactPhone": "13900000002",
+          "serviceAddress": "Room 1802, Building A, 818 Zhangjiang Road, Pudong, Shanghai",
+          "openid": "o0000000000000000000000000000000"
+        }
+      },
+      "response": {
+        "status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "body": {
+          "code": 0,
+          "data": {
+            "orderId": "<EPOCH_MS>",
+            "orderNo": "<PAY_ORDER_NO>",
+            "timeStamp": "<UNIX_SECONDS>",
+            "nonceStr": "<NONCE_STR>",
+            "package": "prepay_id=<PREPAY_ID>",
+            "signType": "MD5",
+            "paySign": "<PAY_SIGN>"
+          }
+        }
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "payment-callback-bad-sign",
+      "group": "payment",
+      "note": "A callback with a wrong signature still returns HTTP 200; the failure is inside the XML body.",
+      "base": "pay",
+      "request": {
+        "method": "POST",
+        "path": "/api/wxpay/callback",
+        "headers": {},
+        "body": "<xml><return_code><![CDATA[SUCCESS]]></return_code><out_trade_no><![CDATA[<PAY_ORDER_NO>]]></out_trade_no><result_code><![CDATA[SUCCESS]]></result_code><sign><![CDATA[DEADBEEF]]></sign></xml>"
+      },
+      "response": {
+        "status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "body": "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[签名错误]]></return_msg></xml>"
+      },
+      "expected_status": 200,
+      "status_matches": true
+    },
+    {
+      "id": "payment-callback-correct-sign",
+      "group": "payment",
+      "note": "A signature computed exactly as WeChat requires (sorted key=value, &key=<merchant key>, MD5 upper-case) is still rejected. The global JSON body parser never reads the XML, so `params` is empty and no signature can ever match.",
+      "base": "pay",
+      "request": {
+        "method": "POST",
+        "path": "/api/wxpay/callback",
+        "headers": {},
+        "body": "<xml><return_code><![CDATA[SUCCESS]]></return_code><result_code><![CDATA[SUCCESS]]></result_code><out_trade_no><![CDATA[<PAY_ORDER_NO>]]></out_trade_no><transaction_id><![CDATA[4200000000202611010000000001]]></transaction_id><sign><![CDATA[<SIGN>]]></sign></xml>"
+      },
+      "response": {
+        "status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "body": "<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[签名错误]]></return_msg></xml>"
+      },
+      "expected_status": 200,
+      "status_matches": true
+    }
+  ]
+}

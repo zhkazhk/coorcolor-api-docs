@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POST /api/user/send-code · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#validation">Validation</a></li><li><a href="#delivery">Delivery</a></li><li><a href="#then-what">Then what</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="POST /api/user/send-code">
+<p class="eyebrow">Reference · auth</p><p class="endpoint-head"><span class="method method--post">POST</span><code class="endpoint-path">/api/user/send-code</code></p><h1>Send a verification code</h1><p class="lede">Issues a six-digit code for a phone number and keeps it in memory for five minutes. No SMS is sent: the code is written to the server log.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:261-277</span></dd><dt>Auth required</dt><dd>No</dd><dt>Code lifetime</dt><dd>5 minutes</dd><dt>Rate limit</dt><dd>None</dd></dl>
+<h2 id="request">Request</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>phone</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>Eleven characters. Length is the only rule that is enforced.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="send-code-ok">
+  <figcaption><span class="capture__id">recorded pair <code>send-code-ok</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/user/send-code</code></p>
+  <pre><code>{
+  "phone": "13900000001"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "message": "验证码已发送"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Any 11-character string passes validation; no SMS is actually sent.</p>
+</figure>
+<h2 id="response">Response</h2>
+<p>The response always says the code was sent, even though nothing was sent.</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Notes</th></tr></thead><tbody><tr><td><code>data.message</code></td><td>Fixed string 验证码已发送. It is an acknowledgement, not a delivery receipt.</td></tr></tbody></table></div>
+<h2 id="validation">Validation</h2>
+<p>The check is <code>phone.length !== 11</code> (<span class="cite">server/index.js:264</span>). A number with eleven non-digits passes:</p>
+<figure class="capture" data-capture="send-code-non-numeric">
+  <figcaption><span class="capture__id">recorded pair <code>send-code-non-numeric</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/user/send-code</code></p>
+  <pre><code>{
+  "phone": "abcdefghijk"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "message": "验证码已发送"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Eleven non-digit characters are accepted. <code>phone.length !== 11</code> is the whole validation, so this defect is reproducible.</p>
+</figure>
+<p>A short number is rejected, which is the only failure this route has:</p>
+<figure class="capture" data-capture="send-code-bad-phone">
+  <figcaption><span class="capture__id">recorded pair <code>send-code-bad-phone</code></span> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/user/send-code</code></p>
+  <pre><code>{
+  "phone": "1390000"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "请输入正确的手机号"
+}</code></pre>
+  
+  <p class="capture__note">Length is the only check here and it runs before the format check.</p>
+</figure>
+<div class="note note--info"><span class="note__label">A stricter validator already exists</span><p><code>validatePhone</code> with <code>/^1[3-9]\d{9}$/</code> is defined in the same file (<span class="cite">server/index.js:34</span>) and used by order validation, but not here. See <a href="../errors/index.html#E-SMS-LEN">E-SMS-LEN</a>.</p></div>
+<h2 id="delivery">Delivery</h2>
+<p>There is no SMS provider integration. The code is generated, stored in a module-level object, and printed:</p>
+<pre><code>const code = String(Math.floor(100000 + Math.random() * 900000));
+verificationCodes[phone] = { code, expiresAt: Date.now() + 5 * 60 * 1000 };
+console.log(`发送验证码 ${code} 到 ${phone}`);</code></pre>
+<p>Three consequences follow directly, and all three are visible in the source rather than inferred:</p>
+<ul><li>The user never receives anything. Any flow that depends on the code arriving on a phone cannot complete in production.</li><li>The store is a plain object with no eviction, so it grows for the life of the process; a restart drops every pending code.</li><li>Requesting a code for the same number twice overwrites the previous one, silently invalidating a code the user may already be holding.</li></ul>
+<h2 id="then-what">Then what</h2>
+<p>Verification is a separate call, <code>POST /api/user/bind-phone</code>, which accepts <code>phone</code> and a six-digit <code>code</code>. Its failures are 400 with one of four messages: 请输入正确的手机号, 请输入6位验证码, 请先获取验证码, 验证码已过期, 验证码错误 — a wrong code looks like this:</p>
+<figure class="capture" data-capture="bind-phone-wrong-code">
+  <figcaption><span class="capture__id">recorded pair <code>bind-phone-wrong-code</code></span> <span class="chip chip--warn">HTTP 400</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/user/bind-phone</code></p>
+  <pre><code>{
+  "phone": "13900000001",
+  "code": "000000"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": -1,
+  "message": "验证码错误"
+}</code></pre>
+  
+  <p class="capture__note">A code was requested for this number in the previous case, so the failure is the value, not the request.</p>
+</figure>
+<p>Because no code is delivered, a working end-to-end sign-in currently requires reading the code out of the server log. Say so in release notes rather than describing the flow as complete.</p>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>send-code-ok</code>, <code>send-code-non-numeric</code>, <code>send-code-bad-phone</code>, <code>bind-phone-wrong-code</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

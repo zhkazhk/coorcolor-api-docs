@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POST /api/login · CoorColor docs</title>
+<meta name="description" content="Documentation sample for the CoorColor print-service API: generated from a parsed contract, recorded request/response pairs, and an error catalogue.">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html"><span class="brand__mark">CoorColor</span><span>documentation sample</span></a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="../index.html">Overview</a><a href="../api/index.html" aria-current="page">API reference</a><a href="../cli/index.html">CLI</a><a href="../errors/index.html">Error catalogue</a><a href="../standards/style-guide.html">Style guide</a><a href="../standards/rubric.html">Rubric</a><a href="../review/index.html">Model review</a>
+    </nav>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Page contents">
+    <div class="sidebar__block"><p class="sidebar__title">On this page</p><ul><li><a href="#request">Request</a></li><li><a href="#response">Response</a></li><li><a href="#errors">Errors</a></li><li><a href="#behaviour">Behaviour worth knowing</a></li></ul></div><div class="sidebar__block"><p class="sidebar__title">Elsewhere</p><ul><li><a href="../index.html">Overview</a></li><li><a href="../cli/index.html">CLI</a></li><li><a href="../errors/index.html">Error catalogue</a></li><li><a href="../standards/style-guide.html">Style guide</a></li><li><a href="../standards/rubric.html">Rubric</a></li><li><a href="../review/index.html">Model review</a></li></ul></div>
+  </aside>
+  <main id="main">
+<article data-endpoint="POST /api/login">
+<p class="eyebrow">Reference · auth</p><p class="endpoint-head"><span class="method method--post">POST</span><code class="endpoint-path">/api/login</code></p><h1>Administrator sign-in</h1><p class="lede">Exchanges an administrator username and password for a 24-hour JWT. This is the only sign-in the service has; the mini program's users have no equivalent.</p><dl class="meta"><dt>Source</dt><dd><span class="cite">server/index.js:59-70</span></dd><dt>Auth required</dt><dd>No</dd><dt>Token lifetime</dt><dd>24 hours (<code>expiresIn: '24h'</code>)</dd><dt>Rate limit</dt><dd>None — see the note below</dd></dl>
+<h2 id="request">Request</h2>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>username</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>Administrator username. Seeded as <code>admin</code> on first start.</td></tr><tr><td><code>password</code></td><td>body</td><td><code>string</code></td><td>Yes</td><td>Plain password over the wire; compared against a bcrypt hash, never stored.</td></tr></tbody></table></div>
+<figure class="capture" data-capture="login-ok">
+  <figcaption><span class="capture__id">recorded pair <code>login-ok</code></span> <span class="chip chip--ok">HTTP 200</span></figcaption>
+  <p class="capture__sub">Request</p>
+  <p class="capture__line"><code>POST /api/login</code></p>
+  <pre><code>{
+  "username": "admin",
+  "password": "admin123"
+}</code></pre>
+  
+  <p class="capture__sub">Response</p>
+  <pre><code>{
+  "code": 0,
+  "data": {
+    "token": "&lt;TOKEN&gt;",
+    "username": "admin"
+  }
+}</code></pre>
+  
+  <p class="capture__note">Correct administrator credentials. The token is a 24 h HS256 JWT.</p>
+</figure>
+<h2 id="response">Response</h2>
+<p>A successful sign-in returns the token and the username it belongs to. The token payload is <code>{id, username}</code>, so it carries no phone number and cannot identify a mini-program user (see <a href="authentication.html#token-shapes">token shapes</a>).</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Notes</th></tr></thead><tbody><tr><td><code>data.token</code></td><td>HS256 JWT, signed with the server secret, valid for 24 hours.</td></tr><tr><td><code>data.username</code></td><td>Echo of the account name; safe to show in the console header.</td></tr></tbody></table></div>
+<h2 id="errors">Errors</h2>
+<div class="table-wrap"><table><thead><tr><th>HTTP</th><th>message</th><th>When it happens</th><th>What to do</th></tr></thead><tbody><tr data-status="401" data-message="用户不存在"><td><span class="chip chip--warn">HTTP 401</span></td><td><code>用户不存在</code></td><td>No administrator record matches <code>username</code>.</td><td>Check the account name. Do not surface this text as-is: it tells the caller the account does not exist.</td></tr><tr data-status="401" data-message="密码错误"><td><span class="chip chip--warn">HTTP 401</span></td><td><code>密码错误</code></td><td>The account exists and the bcrypt comparison fails.</td><td>Re-enter the password. Same status as the row above, different string.</td></tr></tbody></table></div>
+<div class="note note--warn"><span class="note__label">Two 401s, one guessable difference</span><p>The two messages differ, so a script can enumerate administrator names. There is no lockout and no throttle on this route. See <a href="../errors/index.html#E-AUTH-ENUM">E-AUTH-ENUM</a>.</p></div>
+<h2 id="behaviour">Behaviour worth knowing</h2>
+<ul><li><code>bcrypt.compareSync</code> runs on the request thread, so the event loop blocks for the duration of the hash — tens of milliseconds per attempt, which is also the only accidental brake on guessing.</li><li>The token is the whole session. There is no revocation list, so signing out on the client (<code>wx.removeStorageSync('token')</code>) does not invalidate a copy that is already in the wild.</li><li>The failed attempt returns 401 with the envelope, while an unregistered path returns 404 with 请求的资源不存在. Both carry <code>code: -1</code>.</li></ul>
+<div class="note"><span class="note__label">Evidence</span><p>Every example on this page is a recorded request/response pair: <code>login-ok</code>. Re-record with <code>python tools/capture.py</code>; check this page against the contract with <code>python tools/shyzctl.py verify</code>.</p></div>
+</article>
+  </main>
+</div>
+<footer class="footer">
+  <div class="footer__inner">
+    <span>CoorColor print-service API · documentation sample · Liu Yang 2026</span>
+    <span>Generated from <code>contracts/shyz-api-contract.json</code> (57cad89dc88d) and 39 recorded pairs. Check with <code>python tools/shyzctl.py verify</code>.</span>
+  </div>
+</footer>
+</body>
+</html>

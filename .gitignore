@@ -1,0 +1,20 @@
+# Sandbox copy made by tools/capture.py --prepare-sandbox
+capture-sandbox/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Node (only if the service is checked out alongside)
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Local preview
+*.log
